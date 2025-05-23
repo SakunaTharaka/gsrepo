@@ -1,0 +1,185 @@
+.view-group-container {
+  max-width: 800px;
+  margin: 2rem auto;
+  padding: 2rem;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.group-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.platform-tag {
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.platform-tag.whatsapp {
+  background: #25D366;
+  color: white;
+}
+
+.platform-tag.telegram {
+  background: #0088cc;
+  color: white;
+}
+
+.group-meta {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.meta-item {
+  background: #f5f5f5;
+  padding: 1rem;
+  border-radius: 8px;
+}
+
+.meta-label {
+  display: block;
+  font-weight: 600;
+  color: #666;
+  margin-bottom: 0.5rem;
+}
+
+.group-description h3,
+.group-tags h3 {
+  margin-bottom: 1rem;
+  color: #333;
+}
+
+.group-tags {
+  margin: 2rem 0;
+}
+
+.tag {
+  display: inline-block;
+  background: #e0e0e0;
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  margin: 0.25rem;
+  font-size: 0.9rem;
+}
+
+.direct-link {
+  display: block;
+  width: fit-content;
+  margin: 2rem auto;
+  padding: 1rem 2rem;
+  border-radius: 8px;
+  text-decoration: none;
+  color: white;
+  font-weight: 600;
+  transition: transform 0.2s ease;
+}
+
+.direct-link.whatsapp {
+  background: #25D366;
+}
+
+.direct-link.telegram {
+  background: #0088cc;
+}
+
+.direct-link:hover {
+  transform: translateY(-2px);
+}
+
+.back-button {
+  background: none;
+  border: none;
+  color: #666;
+  cursor: pointer;
+  padding: 0.5rem 1rem;
+  transition: color 0.2s ease;
+}
+
+.back-button:hover {
+  color: #333;
+}
+
+.loading-container,
+.error-container {
+  text-align: center;
+  padding: 4rem;
+  font-size: 1.2rem;
+}
+/* Group Icon Styles */
+.group-icon-container {
+  text-align: center;
+  margin: 2rem 0;
+}
+
+.group-icon {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid #fff;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.default-group-icon {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  font-weight: bold;
+  background: #f0f0f0;
+  border: 3px solid #fff;
+}
+
+.default-group-icon.whatsapp {
+  background: #25D366;
+  color: white;
+}
+
+.default-group-icon.telegram {
+  background: #0088cc;
+  color: white;
+}
+
+/* Terms & Conditions */
+.terms-conditions {
+  margin: 2rem auto;
+  max-width: 600px;
+  padding: 1rem;
+  background: #f8f9fa;
+  border-radius: 8px;
+  font-size: 0.9rem;
+}
+
+.terms-conditions h4 {
+  margin-bottom: 1rem;
+  color: #333;
+}
+
+.terms-conditions ul {
+  list-style-type: disc;
+  padding-left: 1.5rem;
+  color: #666;
+  line-height: 1.6;
+}
+
+.terms-conditions li {
+  margin-bottom: 0.5rem;
+}
+
+.action-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+}
