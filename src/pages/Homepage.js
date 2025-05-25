@@ -309,6 +309,30 @@ function Homepage() {
     setFilteredLanguages(languages);
   };
 
+  // NEW FEATURE: Handle join group button click - open in new tab
+  const handleJoinGroup = (group) => {
+    // Create URL for the launching page
+    const launchUrl = `/viewgroup/${selectedPlatform}/${group.id}`;
+    
+    // Open in new tab
+    window.open(launchUrl, '_blank', 'noopener,noreferrer');
+  };
+
+  // NEW FEATURE: Handle add group buttons - open in new tab
+  const handleAddWhatsAppGroup = () => {
+    // Get current origin (domain + port)
+    const currentOrigin = window.location.origin;
+    const fullUrl = `${currentOrigin}/add-whatsapp-group`;
+    window.open(fullUrl, '_blank', 'noopener,noreferrer');
+  };
+
+  const handleAddTelegramGroup = () => {
+    // Get current origin (domain + port)
+    const currentOrigin = window.location.origin;
+    const fullUrl = `${currentOrigin}/add-telegram-group`;
+    window.open(fullUrl, '_blank', 'noopener,noreferrer');
+  };
+
   // Search filter
   const filteredGroups = groups.filter(group => {
     const search = searchQuery.toLowerCase();
@@ -348,13 +372,13 @@ function Homepage() {
       <div className="action-buttons">
         <button 
           className="btn whatsapp-btn"
-          onClick={() => navigate('/add-whatsapp-group')}
+          onClick={handleAddWhatsAppGroup}
         >
           Add WhatsApp Group
         </button>
         <button 
           className="btn telegram-btn"
-          onClick={() => navigate('/add-telegram-group')}
+          onClick={handleAddTelegramGroup}
         >
           Add Telegram Group
         </button>
@@ -550,7 +574,7 @@ function Homepage() {
 
                     <div className="group-actions">
                       <button
-                        onClick={() => navigate(`/viewgroup/${selectedPlatform}/${group.id}`)}
+                        onClick={() => handleJoinGroup(group)}
                         className={`join-button ${selectedPlatform}`}
                       >
                         Join {selectedPlatform === 'whatsapp' ? 'WhatsApp Group' : 'Telegram Group'}

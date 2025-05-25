@@ -92,7 +92,7 @@ function ViewGroup() {
       </div>
 
       <div className="group-header">
-        <h1>{group.name}</h1>
+        <h1 className="group-name">{group.name}</h1>
         <span className={`platform-tag ${platform}`}>
           {platform === 'whatsapp' ? 'WhatsApp' : 'Telegram'}
         </span>
@@ -188,7 +188,7 @@ function ViewGroup() {
 
       <button 
         className="back-button"
-        onClick={() => navigate(-1)}
+        onClick={() => navigate('/')}
       >
         &larr; Back to Groups
       </button>
