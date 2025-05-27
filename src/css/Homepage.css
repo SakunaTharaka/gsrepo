@@ -721,4 +721,17 @@
   .group-card {
     min-height: 10px;
   }
+  .filter-link {
+  background: none;
+  border: none;
+  color: #007bff;
+  cursor: pointer;
+  padding: 0;
+  font: inherit;
+  text-decoration: none;
+}
+
+.filter-link:hover {
+  text-decoration: underline;
+}
 }

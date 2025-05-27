@@ -41,6 +41,22 @@ function Homepage() {
 
   const navigate = useNavigate();
 
+  // Read URL parameters on component mount
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    
+    // Set platform from URL
+    const platformParam = params.get('platform');
+    if (platformParam === 'whatsapp' || platformParam === 'telegram') {
+      setSelectedPlatform(platformParam);
+    }
+
+    // Set filters from URL
+    setSelectedCategory(params.get('category') || '');
+    setSelectedCountry(params.get('country') || '');
+    setSelectedLanguage(params.get('language') || '');
+  }, []);
+
   // Fetch dropdown data
   useEffect(() => {
     const fetchDropdowns = async () => {
@@ -140,6 +156,7 @@ function Homepage() {
     setCategoryInputValue(category);
     setFilteredCategories(categories);
     setShowCategories(false);
+    updateUrlParams({ category });
   };
 
   const handleCountrySelect = (country) => {
@@ -147,6 +164,7 @@ function Homepage() {
     setCountryInputValue(country);
     setFilteredCountries(countries);
     setShowCountries(false);
+    updateUrlParams({ country });
   };
 
   const handleLanguageSelect = (language) => {
@@ -154,6 +172,20 @@ function Homepage() {
     setLanguageInputValue(language);
     setFilteredLanguages(languages);
     setShowLanguages(false);
+    updateUrlParams({ language });
+  };
+
+  // Update URL parameters
+  const updateUrlParams = (params) => {
+    const url = new URL(window.location);
+    Object.entries(params).forEach(([key, value]) => {
+      if (value) {
+        url.searchParams.set(key, value);
+      } else {
+        url.searchParams.delete(key);
+      }
+    });
+    window.history.replaceState(null, '', url.toString());
   };
 
   // Sync input values with selected values
@@ -307,27 +339,37 @@ function Homepage() {
     setFilteredCategories(categories);
     setFilteredCountries(countries);
     setFilteredLanguages(languages);
+    
+    // Clear URL parameters
+    const url = new URL(window.location);
+    url.searchParams.delete('category');
+    url.searchParams.delete('country');
+    url.searchParams.delete('language');
+    window.history.replaceState(null, '', url.toString());
   };
 
-  // NEW FEATURE: Handle join group button click - open in new tab
+  // Handle filter link clicks
+  const handleFilterClick = (type, value) => {
+    const url = new URL(window.location.origin);
+    url.searchParams.set('platform', selectedPlatform);
+    url.searchParams.set(type, value);
+    window.open(url.toString(), '_blank');
+  };
+
+  // Handle join group button click
   const handleJoinGroup = (group) => {
-    // Create URL for the launching page
     const launchUrl = `/viewgroup/${selectedPlatform}/${group.id}`;
-    
-    // Open in new tab
     window.open(launchUrl, '_blank', 'noopener,noreferrer');
   };
 
-  // NEW FEATURE: Handle add group buttons - open in new tab
+  // Handle add group buttons
   const handleAddWhatsAppGroup = () => {
-    // Get current origin (domain + port)
     const currentOrigin = window.location.origin;
     const fullUrl = `${currentOrigin}/add-whatsapp-group`;
     window.open(fullUrl, '_blank', 'noopener,noreferrer');
   };
 
   const handleAddTelegramGroup = () => {
-    // Get current origin (domain + port)
     const currentOrigin = window.location.origin;
     const fullUrl = `${currentOrigin}/add-telegram-group`;
     window.open(fullUrl, '_blank', 'noopener,noreferrer');
@@ -505,13 +547,23 @@ function Homepage() {
       <div className="platform-toggle">
         <button
           className={`toggle-btn whatsapp ${selectedPlatform === 'whatsapp' ? 'active' : ''}`}
-          onClick={() => setSelectedPlatform('whatsapp')}
+          onClick={() => {
+            const url = new URL(window.location);
+            url.searchParams.set('platform', 'whatsapp');
+            window.history.replaceState(null, '', url.toString());
+            setSelectedPlatform('whatsapp');
+          }}
         >
           WhatsApp
         </button>
         <button
           className={`toggle-btn telegram ${selectedPlatform === 'telegram' ? 'active' : ''}`}
-          onClick={() => setSelectedPlatform('telegram')}
+          onClick={() => {
+            const url = new URL(window.location);
+            url.searchParams.set('platform', 'telegram');
+            window.history.replaceState(null, '', url.toString());
+            setSelectedPlatform('telegram');
+          }}
         >
           Telegram
         </button>
@@ -552,15 +604,30 @@ function Homepage() {
                     <div className="group-meta">
                       <div className="meta-item">
                         <span className="meta-label">Category:</span>
-                        {group.category}
+                        <button
+                          className="filter-link"
+                          onClick={() => handleFilterClick('category', group.category)}
+                        >
+                          {group.category}
+                        </button>
                       </div>
                       <div className="meta-item">
                         <span className="meta-label">Country:</span>
-                        {group.country}
+                        <button
+                          className="filter-link"
+                          onClick={() => handleFilterClick('country', group.country)}
+                        >
+                          {group.country}
+                        </button>
                       </div>
                       <div className="meta-item">
                         <span className="meta-label">Language:</span>
-                        {group.language}
+                        <button
+                          className="filter-link"
+                          onClick={() => handleFilterClick('language', group.language)}
+                        >
+                          {group.language}
+                        </button>
                       </div>
                     </div>
 
