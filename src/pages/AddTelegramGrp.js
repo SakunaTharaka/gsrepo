@@ -267,11 +267,16 @@ const AddTelegramGrp = () => {
   return (
     <div className="add-telegram-container">
       <header className="main-header">
-        <div className="header-content">
-          <h1>Multilinks.cloud</h1>
-          <h2>Find your community</h2>
-        </div>
-      </header>
+  <div className="header-content">
+    <h1 
+      style={{ cursor: 'pointer' }} 
+      onClick={() => navigate('/')}
+    >
+      Multilinks.cloud
+    </h1>
+    <h2>Find your community</h2>
+  </div>
+</header>
       <div className="add-telegram-form-container">
         <div className="form-content">
           <h1 className="form-header">Add Telegram Group/Channel</h1>

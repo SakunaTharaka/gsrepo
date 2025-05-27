@@ -261,11 +261,16 @@ const AddWhatsappGroup = () => {
   return (
     <div className="add-whatsapp-container">
       <header className="main-header">
-        <div className="header-content">
-          <h1>Multilinks.cloud</h1>
-          <h2>Find your community</h2>
-        </div>
-      </header>
+  <div className="header-content">
+    <h1 
+      style={{ cursor: 'pointer' }} 
+      onClick={() => navigate('/')}
+    >
+      Multilinks.cloud
+    </h1>
+    <h2>Find your community</h2>
+  </div>
+</header>
       <div className="add-whatsapp-form-container">
         <div className="form-content">
           <h1 className="form-header">Add WhatsApp Group</h1>
