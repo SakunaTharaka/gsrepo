@@ -74,11 +74,17 @@ function ViewGroup() {
   return (
     <div className="view-group-container">
       <header className="main-header">
-        <div className="header-content">
-          <h1>Multilinks.cloud</h1>
-          <h2>Find your community</h2>
-        </div>
-      </header>
+  <div className="header-content">
+    <h1 
+      className="clickable-logo" 
+      onClick={() => navigate('/')}
+      style={{ cursor: 'pointer' }}
+    >
+      Multilinks.cloud
+    </h1>
+    <h2>Find your community</h2>
+  </div>
+</header>
 
       <div className="group-icon-container">
         {groupIcon ? (
