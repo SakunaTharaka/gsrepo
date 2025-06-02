@@ -1,19 +1,66 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <!-- Homepage - Main entry point -->
   <url>
     <loc>https://multilinks.cloud/</loc>
     <priority>1.0</priority>
+    <changefreq>daily</changefreq>
+    <lastmod>2025-06-02</lastmod>
   </url>
+
+  <!-- Platform-specific homepage URLs -->
   <url>
-    <loc>https://multilinks.cloud/login</loc>
-    <priority>0.5</priority>
+    <loc>https://multilinks.cloud/?platform=whatsapp</loc>
+    <priority>0.9</priority>
+    <changefreq>daily</changefreq>
+    <lastmod>2025-06-02</lastmod>
   </url>
+
+  <url>
+    <loc>https://multilinks.cloud/?platform=telegram</loc>
+    <priority>0.9</priority>
+    <changefreq>daily</changefreq>
+    <lastmod>2025-06-02</lastmod>
+  </url>
+
+  <!-- Add group pages -->
   <url>
     <loc>https://multilinks.cloud/add-whatsapp-group</loc>
-    <priority>0.6</priority>
+    <priority>0.7</priority>
+    <changefreq>monthly</changefreq>
+    <lastmod>2025-06-02</lastmod>
   </url>
+
   <url>
     <loc>https://multilinks.cloud/add-telegram-group</loc>
-    <priority>0.6</priority>
+    <priority>0.7</priority>
+    <changefreq>monthly</changefreq>
+    <lastmod>2025-06-02</lastmod>
   </url>
+
+  <!-- Login page (public but lower priority) -->
+  <url>
+    <loc>https://multilinks.cloud/login</loc>
+    <priority>0.3</priority>
+    <changefreq>yearly</changefreq>
+    <lastmod>2025-06-02</lastmod>
+  </url>
+
+  <!-- Example individual group pages (these should be generated dynamically) -->
+  <!-- Replace with actual group IDs from your Firebase collections -->
+  <!--
+  <url>
+    <loc>https://multilinks.cloud/viewgroup/whatsapp/GROUP_ID_1</loc>
+    <priority>0.6</priority>
+    <changefreq>weekly</changefreq>
+    <lastmod>2025-06-02</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://multilinks.cloud/viewgroup/telegram/GROUP_ID_2</loc>
+    <priority>0.6</priority>
+    <changefreq>weekly</changefreq>
+    <lastmod>2025-06-02</lastmod>
+  </url>
+  -->
 </urlset>
