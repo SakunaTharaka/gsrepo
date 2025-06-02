@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { db } from '../firebase';
-import { doc, getDoc, collection, query, getDocs, orderBy, limit, startAfter, where } from 'firebase/firestore';
+import { doc, getDoc, collection, query, getDocs, orderBy, limit, startAfter } from 'firebase/firestore';
 import { useNavigate } from 'react-router-dom';
 import logo from '../assets/logo.png';
 import '../css/Homepage.css';
@@ -239,11 +239,16 @@ function Homepage() {
     }
   };
 
+  // UPDATED: Use new collection names
   useEffect(() => {
     const loadGroups = async () => {
       setIsLoading(true);
       try {
-        const collectionName = selectedPlatform === 'whatsapp' ? 'whatsapp' : 'telegramGroups';
+        // Updated collection names
+        const collectionName = selectedPlatform === 'whatsapp' 
+          ? 'ApprovedWA' 
+          : 'ApprovedTG';
+          
         let q = query(
           collection(db, collectionName),
           orderBy('createdAt', 'desc'),
@@ -283,13 +288,17 @@ function Homepage() {
     loadGroups();
   }, [selectedPlatform, selectedCategory, selectedCountry, selectedLanguage]);
 
-  // Load more groups
+  // UPDATED: Use new collection names
   const handleLoadMore = async () => {
     if (!lastVisible || isLoading) return;
 
     setIsLoading(true);
     try {
-      const collectionName = selectedPlatform === 'whatsapp' ? 'whatsapp' : 'telegramGroups';
+      // Updated collection names
+      const collectionName = selectedPlatform === 'whatsapp' 
+        ? 'ApprovedWA' 
+        : 'ApprovedTG';
+        
       const q = query(
         collection(db, collectionName), 
         orderBy('createdAt', 'desc'),

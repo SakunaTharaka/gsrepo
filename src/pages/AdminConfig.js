@@ -29,7 +29,9 @@ import {
   LinearProgress,
   InputAdornment,
   Chip,
-  Tooltip
+  Tooltip,
+  Snackbar,
+  Alert
 } from '@mui/material';
 import { 
   Delete, 
@@ -38,7 +40,8 @@ import {
   Refresh, 
   Lock, 
   Person,
-  Logout 
+  Logout,
+  Check
 } from '@mui/icons-material';
 import { DatePicker } from '@mui/x-date-pickers';
 import { LocalizationProvider } from '@mui/x-date-pickers';
@@ -65,6 +68,16 @@ const AdminConfig = () => {
     username: '',
     password: ''
   });
+
+  // Approval Notification State
+  const [approvalNotification, setApprovalNotification] = useState({
+    open: false,
+    message: '',
+    severity: 'success'
+  });
+
+  // Approval Status State
+  const [approvedStatus, setApprovedStatus] = useState({});
 
   // Fetch dropdown options
   useEffect(() => {
@@ -98,6 +111,41 @@ const AdminConfig = () => {
     };
     fetchCredentials();
   }, []);
+
+  // Check approval status for groups
+  useEffect(() => {
+    const checkApprovalStatus = async () => {
+      const statusMap = {};
+      
+      // Check each group in parallel
+      const promises = groupManagement.groups.map(async (group) => {
+        const targetCollection = groupManagement.platform === 'whatsapp' 
+          ? 'ApprovedWA' 
+          : 'ApprovedTG';
+        
+        const q = query(
+          collection(db, targetCollection),
+          where('originalId', '==', group.id)
+        );
+        
+        const snapshot = await getDocs(q);
+        return { id: group.id, approved: !snapshot.empty };
+      });
+      
+      const results = await Promise.all(promises);
+      
+      // Convert results to status map
+      results.forEach(result => {
+        statusMap[result.id] = result.approved;
+      });
+      
+      setApprovedStatus(statusMap);
+    };
+
+    if (groupManagement.groups.length > 0) {
+      checkApprovalStatus();
+    }
+  }, [groupManagement.groups, groupManagement.platform]);
 
   // Logout handler
   const handleLogout = async () => {
@@ -174,25 +222,110 @@ const AdminConfig = () => {
     }
   };
 
-  // Group handlers
+  // Enhanced group deletion handler
   const handleGroupAction = async (action, group) => {
     try {
-      const collectionName = groupManagement.platform === 'whatsapp' 
-        ? 'whatsapp' 
-        : 'telegramGroups';
-
       if (action === 'delete') {
-        await deleteDoc(doc(db, collectionName, group.id));
+        // Define all collections that might contain this group
+        const allCollections = [
+          'whatsapp',
+          'telegramGroups',
+          'ApprovedWA',
+          'ApprovedTG'
+        ];
+
+        // Prepare all deletion promises
+        const deletionPromises = allCollections.map(async (coll) => {
+          // Query for documents with matching link
+          const q = query(
+            collection(db, coll),
+            where('link', '==', group.link)
+          );
+          const snapshot = await getDocs(q);
+          
+          // Delete all matching documents
+          return Promise.all(
+            snapshot.docs.map(doc => deleteDoc(doc.ref))
+          );
+        });
+
+        // Execute all deletions
+        await Promise.all(deletionPromises);
+
+        // Refresh groups list
         fetchGroups();
+        
+        // Show success notification
+        setApprovalNotification({
+          open: true,
+          message: 'Group deleted from all collections',
+          severity: 'success'
+        });
       }
       
       if (action === 'save') {
+        const collectionName = groupManagement.platform === 'whatsapp' 
+          ? 'whatsapp' 
+          : 'telegramGroups';
         await updateDoc(doc(db, collectionName, group.id), {
           iconUrl: group.iconUrl
+        });
+        
+        // Show success notification
+        setApprovalNotification({
+          open: true,
+          message: 'Group icon updated successfully',
+          severity: 'success'
         });
       }
     } catch (error) {
       console.error('Error:', error);
+      setApprovalNotification({
+        open: true,
+        message: `Action failed: ${error.message}`,
+        severity: 'error'
+      });
+    }
+  };
+
+  // Handle group approval
+  const handleApproveGroup = async (group) => {
+    try {
+      // Determine target collection based on platform
+      const targetCollection = groupManagement.platform === 'whatsapp' 
+        ? 'ApprovedWA' 
+        : 'ApprovedTG';
+      
+      // Prepare approval data
+      const approvalData = {
+        ...group,
+        approvedAt: new Date(),
+        originalId: group.id
+      };
+      
+      // Remove the id so Firestore generates a new one
+      delete approvalData.id;
+      
+      // Add to approved collection
+      const docRef = doc(collection(db, targetCollection));
+      await setDoc(docRef, approvalData);
+      
+      // Update approval status
+      setApprovedStatus(prev => ({ ...prev, [group.id]: true }));
+      
+      // Show success notification
+      setApprovalNotification({
+        open: true,
+        message: `Group approved and added to ${targetCollection}`,
+        severity: 'success'
+      });
+    } catch (error) {
+      console.error('Error approving group:', error);
+      setApprovalNotification({
+        open: true,
+        message: `Error: ${error.message}`,
+        severity: 'error'
+      });
     }
   };
 
@@ -223,26 +356,72 @@ const AdminConfig = () => {
 
       setExistingFields(newOptions);
       setNewField('');
+      
+      // Show success notification
+      setApprovalNotification({
+        open: true,
+        message: `Added new ${selectedDropdown.slice(0, -1)}: ${newField.trim()}`,
+        severity: 'success'
+      });
     } catch (error) {
       console.error('Error updating document:', error);
+      setApprovalNotification({
+        open: true,
+        message: `Error: ${error.message}`,
+        severity: 'error'
+      });
     }
   };
 
   const handleDeleteField = async (index) => {
+    const fieldToDelete = existingFields[index];
     const updatedFields = existingFields.filter((_, i) => i !== index);
     const docRef = doc(db, 'dropdowns', selectedDropdown);
 
     try {
       await updateDoc(docRef, { options: updatedFields });
       setExistingFields(updatedFields);
+      
+      // Show success notification
+      setApprovalNotification({
+        open: true,
+        message: `Deleted ${selectedDropdown.slice(0, -1)}: ${fieldToDelete}`,
+        severity: 'success'
+      });
     } catch (error) {
       console.error('Error deleting field:', error);
+      setApprovalNotification({
+        open: true,
+        message: `Error: ${error.message}`,
+        severity: 'error'
+      });
     }
+  };
+
+  // Close notification
+  const handleCloseNotification = () => {
+    setApprovalNotification(prev => ({ ...prev, open: false }));
   };
 
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns}>
       <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+        {/* Approval Notification */}
+        <Snackbar
+          open={approvalNotification.open}
+          autoHideDuration={6000}
+          onClose={handleCloseNotification}
+          anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+        >
+          <Alert 
+            onClose={handleCloseNotification} 
+            severity={approvalNotification.severity}
+            sx={{ width: '100%' }}
+          >
+            {approvalNotification.message}
+          </Alert>
+        </Snackbar>
+
         {/* Logout Button */}
         <Box sx={{ 
           position: 'fixed',
@@ -444,109 +623,139 @@ const AdminConfig = () => {
           </Box>
 
           {groupManagement.loading && <LinearProgress sx={{ mb: 2 }} />}
+          {groupManagement.error && (
+            <Alert severity="error" sx={{ mb: 2 }}>
+              {groupManagement.error}
+            </Alert>
+          )}
 
           <List sx={{ maxHeight: 500, overflow: 'auto' }}>
-            {groupManagement.groups.map((group) => (
-              <ListItem
-                key={group.id}
-                divider
-                sx={{ 
-                  py: 2,
-                  position: 'relative',
-                  '&::before': !group.iconUrl ? {
-                    content: '""',
-                    position: 'absolute',
-                    left: 8,
-                    top: '50%',
-                    transform: 'translateY(-50%)',
-                    width: '8px',
-                    height: '8px',
-                    borderRadius: '50%',
-                    backgroundColor: 'error.main'
-                  } : {}
-                }}
-              >
-                <Box sx={{ flexGrow: 1, mr: 2 }}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-                    <Typography variant="h6">
-                      {group.name}
-                      {!group.iconUrl && (
-                        <Tooltip title="Missing group icon" arrow>
-                          <Box 
-                            component="span" 
-                            sx={{ 
-                              width: 8, 
-                              height: 8, 
-                              borderRadius: '50%', 
-                              backgroundColor: 'error.main', 
-                              ml: 1 
-                            }} 
+            {groupManagement.groups.map((group) => {
+              const isApproved = approvedStatus[group.id] || false;
+              
+              return (
+                <ListItem
+                  key={group.id}
+                  divider
+                  sx={{ 
+                    py: 2,
+                    position: 'relative',
+                    '&::before': !group.iconUrl ? {
+                      content: '""',
+                      position: 'absolute',
+                      left: 8,
+                      top: '50%',
+                      transform: 'translateY(-50%)',
+                      width: '8px',
+                      height: '8px',
+                      borderRadius: '50%',
+                      backgroundColor: 'error.main'
+                    } : {}
+                  }}
+                >
+                  <Box sx={{ flexGrow: 1, mr: 2 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                      <Typography variant="h6">
+                        {group.name}
+                        {isApproved && (
+                          <Chip 
+                            label="Approved" 
+                            color="success" 
+                            size="small" 
+                            sx={{ ml: 1 }}
                           />
-                        </Tooltip>
-                      )}
-                    </Typography>
-                    <Chip label={group.category} size="small" />
-                    <Chip label={group.country} size="small" />
-                    <Chip label={group.language} size="small" />
+                        )}
+                        {!group.iconUrl && (
+                          <Tooltip title="Missing group icon" arrow>
+                            <Box 
+                              component="span" 
+                              sx={{ 
+                                width: 8, 
+                                height: 8, 
+                                borderRadius: '50%', 
+                                backgroundColor: 'error.main', 
+                                ml: 1 
+                              }} 
+                            />
+                          </Tooltip>
+                        )}
+                      </Typography>
+                      <Chip label={group.category} size="small" />
+                      <Chip label={group.country} size="small" />
+                      <Chip label={group.language} size="small" />
+                    </Box>
+                    
+                    <TextField
+                      fullWidth
+                      variant="outlined"
+                      size="small"
+                      label="Icon URL"
+                      value={group.iconUrl}
+                      error={!group.iconUrl}
+                      onChange={(e) => updateGroupIcon(group.id, e.target.value)}
+                      InputProps={{
+                        startAdornment: group.iconUrl && (
+                          <InputAdornment position="start">
+                            <img 
+                              src={group.iconUrl} 
+                              alt="Group Icon" 
+                              style={{ 
+                                width: 24, 
+                                height: 24, 
+                                borderRadius: '50%',
+                                objectFit: 'cover' 
+                              }}
+                            />
+                          </InputAdornment>
+                        ),
+                      }}
+                      helperText={!group.iconUrl && "Icon URL is required"}
+                      FormHelperTextProps={{
+                        sx: { 
+                          position: 'absolute',
+                          bottom: -24,
+                          fontSize: '0.75rem'
+                        }
+                      }}
+                    />
                   </Box>
-                  
-                  <TextField
-                    fullWidth
-                    variant="outlined"
-                    size="small"
-                    label="Icon URL"
-                    value={group.iconUrl}
-                    error={!group.iconUrl}
-                    onChange={(e) => updateGroupIcon(group.id, e.target.value)}
-                    InputProps={{
-                      startAdornment: group.iconUrl && (
-                        <InputAdornment position="start">
-                          <img 
-                            src={group.iconUrl} 
-                            alt="Group Icon" 
-                            style={{ 
-                              width: 24, 
-                              height: 24, 
-                              borderRadius: '50%',
-                              objectFit: 'cover' 
-                            }}
-                          />
-                        </InputAdornment>
-                      ),
-                    }}
-                    helperText={!group.iconUrl && "Icon URL is required"}
-                    FormHelperTextProps={{
-                      sx: { 
-                        position: 'absolute',
-                        bottom: -24,
-                        fontSize: '0.75rem'
-                      }
-                    }}
-                  />
-                </Box>
 
-                <Box sx={{ display: 'flex', gap: 1 }}>
-                  <IconButton
-                    color="primary"
-                    onClick={() => handleGroupAction('save', group)}
-                  >
-                    <Save />
-                  </IconButton>
-                  <IconButton
-                    color="error"
-                    onClick={() => handleGroupAction('delete', group)}
-                  >
-                    <Delete />
-                  </IconButton>
-                  <IconButton
-                    color="success"
-                    onClick={() => window.open(group.link, '_blank')}
-                  >
-                    <Link />
-                  </IconButton>
-                </Box>
-              </ListItem>
-            ))}
+                  <Box sx={{ display: 'flex', gap: 1 }}>
+                    {/* Show Approve button only for unapproved groups */}
+                    {!isApproved && (
+                      <Tooltip title="Approve Group">
+                        <IconButton
+                          color="success"
+                          onClick={() => handleApproveGroup(group)}
+                        >
+                          <Check />
+                        </IconButton>
+                      </Tooltip>
+                    )}
+                    
+                    {/* Always show these 3 buttons */}
+                    <IconButton
+                      color="primary"
+                      onClick={() => handleGroupAction('save', group)}
+                    >
+                      <Save />
+                    </IconButton>
+                    <IconButton
+                      color="error"
+                      onClick={() => handleGroupAction('delete', group)}
+                    >
+                      <Delete />
+                    </IconButton>
+                    <IconButton
+                      color="success"
+                      onClick={() => window.open(group.link, '_blank')}
+                    >
+                      <Link />
+                    </IconButton>
+                  </Box>
+                </ListItem>
+              );
+            })}
           </List>
 
           {groupManagement.groups.length === 0 && !groupManagement.loading && (

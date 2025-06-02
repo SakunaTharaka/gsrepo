@@ -2,13 +2,14 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { db } from '../firebase';
 import { doc, getDoc, updateDoc, arrayUnion } from 'firebase/firestore';
-import { FaFlag, FaStar } from 'react-icons/fa';
+import { FaFlag, FaStar, FaExclamationTriangle } from 'react-icons/fa';
 import '../css/ViewGroup.css';
 
 function ViewGroup() {
   const { platform, groupId } = useParams();
   const [group, setGroup] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
   const [showReport, setShowReport] = useState(false);
   const [reportText, setReportText] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -18,32 +19,54 @@ function ViewGroup() {
   useEffect(() => {
     const fetchGroup = async () => {
       try {
-        const collectionName = platform === 'whatsapp' ? 'whatsapp' : 'telegramGroups';
+        setLoading(true);
+        setError('');
+        
+        // Validate platform first
+        if (!['whatsapp', 'telegram'].includes(platform)) {
+          setError(`Invalid platform: ${platform}`);
+          setLoading(false);
+          return;
+        }
+
+        // Determine correct collection
+        const collectionName = platform === 'whatsapp' ? 'ApprovedWA' : 'ApprovedTG';
+        console.log(`Fetching from ${collectionName}: ${groupId}`);
+        
         const groupRef = doc(db, collectionName, groupId);
         const groupSnap = await getDoc(groupRef);
 
         if (groupSnap.exists()) {
-          setGroup({ id: groupSnap.id, ...groupSnap.data() });
+          const groupData = groupSnap.data();
+          
+          // Validate required fields
+          if (!groupData.link) {
+            setError('Group link is missing in database record');
+          } else {
+            setGroup({ id: groupSnap.id, ...groupData });
+          }
         } else {
-          navigate('/404');
+          setError(`Group not found in ${collectionName} collection`);
+          console.error(`Document not found: ${collectionName}/${groupId}`);
         }
       } catch (error) {
-        console.error('Error fetching group:', error);
-        navigate('/error');
+        console.error('Firestore error:', error);
+        setError(`Database error: ${error.message}`);
       } finally {
         setLoading(false);
       }
     };
 
     fetchGroup();
-  }, [platform, groupId, navigate]);
+  }, [platform, groupId]);
 
   const handleReportSubmit = async () => {
     if (!reportText.trim() || reportText.length > 150) return;
 
     setIsSubmitting(true);
     try {
-      const groupRef = doc(db, platform === 'whatsapp' ? 'whatsapp' : 'telegramGroups', groupId);
+      const collectionName = platform === 'whatsapp' ? 'ApprovedWA' : 'ApprovedTG';
+      const groupRef = doc(db, collectionName, groupId);
       
       await updateDoc(groupRef, {
         reports: arrayUnion({
@@ -58,33 +81,72 @@ function ViewGroup() {
       setTimeout(() => setReportStatus(''), 3000);
       setShowReport(false);
     } catch (error) {
-      console.error('Error submitting report:', error);
+      console.error('Report submission error:', error);
       setReportStatus('Failed to submit report. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  if (loading) return <div className="loading-container">Loading group details...</div>;
+  if (loading) {
+    return (
+      <div className="loading-container">
+        <div className="spinner"></div>
+        <p>Loading group details...</p>
+      </div>
+    );
+  }
 
-  if (!group) return <div className="error-container">Group not found</div>;
+  if (error) {
+    return (
+      <div className="error-container">
+        <FaExclamationTriangle className="error-icon" />
+        <h2>Error Loading Group</h2>
+        <p>{error}</p>
+        <div className="error-details">
+          <p><strong>Platform:</strong> {platform}</p>
+          <p><strong>Group ID:</strong> {groupId}</p>
+        </div>
+        <button 
+          className="back-button"
+          onClick={() => navigate('/')}
+        >
+          &larr; Back to Groups
+        </button>
+      </div>
+    );
+  }
+
+  if (!group) {
+    return (
+      <div className="not-found-container">
+        <h2>Group Not Found</h2>
+        <p>The requested group could not be found in our database.</p>
+        <button 
+          className="back-button"
+          onClick={() => navigate('/')}
+        >
+          &larr; Back to Groups
+        </button>
+      </div>
+    );
+  }
 
   const groupIcon = group.iconUrl || group.avatar;
 
   return (
     <div className="view-group-container">
       <header className="main-header">
-  <div className="header-content">
-    <h1 
-      className="clickable-logo" 
-      onClick={() => navigate('/')}
-      style={{ cursor: 'pointer' }}
-    >
-      Multilinks.cloud
-    </h1>
-    <h2>Find your community</h2>
-  </div>
-</header>
+        <div className="header-content">
+          <h1 
+            className="clickable-logo" 
+            onClick={() => navigate('/')}
+          >
+            Multilinks.cloud
+          </h1>
+          <h2>Find your community</h2>
+        </div>
+      </header>
 
       <div className="group-icon-container">
         {groupIcon ? (
