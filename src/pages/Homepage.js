@@ -611,33 +611,29 @@ function Homepage() {
                     )}
 
                     <div className="group-meta">
-                      <div className="meta-item">
-                        <span className="meta-label">Category:</span>
+                      <span className="meta-inline">
+                        🏷️ 
                         <button
                           className="filter-link"
                           onClick={() => handleFilterClick('category', group.category)}
                         >
                           {group.category}
                         </button>
-                      </div>
-                      <div className="meta-item">
-                        <span className="meta-label">Country:</span>
+                        {' '} 🌍 
                         <button
                           className="filter-link"
                           onClick={() => handleFilterClick('country', group.country)}
                         >
                           {group.country}
                         </button>
-                      </div>
-                      <div className="meta-item">
-                        <span className="meta-label">Language:</span>
+                        {' '} 🗣️ 
                         <button
                           className="filter-link"
                           onClick={() => handleFilterClick('language', group.language)}
                         >
                           {group.language}
                         </button>
-                      </div>
+                      </span>
                     </div>
 
                     {group.tags?.length > 0 && (
