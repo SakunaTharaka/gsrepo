@@ -30,6 +30,11 @@
 .main-header h1 {
   font-size: 2rem;
   margin: 0;
+  transition: opacity 0.3s ease;
+}
+
+.main-header h1:hover {
+  opacity: 0.8;
 }
 
 .main-header h2 {
@@ -63,32 +68,24 @@
   padding: 2rem;
 }
 
-/* Platform-Specific Colors */
 /* WhatsApp Styles */
 .add-whatsapp-container {
   --primary-color: #25D366;
   --primary-hover: #128C7E;
   --tag-bg: rgba(37, 211, 102, 0.1);
   --tag-color: #25D366;
-}
-
-/* Telegram Styles */
-.add-telegram-container {
-  --primary-color: #0088cc;
-  --primary-hover: #006699;
-  --tag-bg: #e0f2fe;
-  --tag-color: #075985;
+  --tag-remove: #e53e3e;
+  --guide-bg: #f0fff4;
+  --guide-border: #c6f6d5;
 }
 
 .form-header {
   font-size: 1.75rem;
   font-weight: 700;
-  color: #25D366;
+  color: var(--primary-color);
   text-align: center;
   margin-bottom: 2rem;
 }
-
-
 
 /* Form Elements */
 .form-group {
@@ -103,6 +100,11 @@
   margin-bottom: 0.5rem;
 }
 
+.form-label:after {
+  content: " *";
+  color: #e53e3e;
+}
+
 .form-input {
   width: 100%;
   padding: 0.75rem 1rem;
@@ -115,7 +117,7 @@
 .form-input:focus {
   outline: none;
   border-color: var(--primary-color);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary-color) 20%, transparent);
+  box-shadow: 0 0 0 3px rgba(37, 211, 102, 0.2);
 }
 
 .textarea {
@@ -152,6 +154,7 @@
   border-left: 6px solid transparent;
   border-right: 6px solid transparent;
   border-top: 6px solid #666;
+  pointer-events: none;
 }
 
 .dropdown-list {
@@ -164,13 +167,14 @@
   border-radius: 0.5rem;
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
   z-index: 100;
-  margin-top: 0.5rem;
+  margin-top: 0.25rem;
 }
 
 .dropdown-item {
   padding: 0.75rem 1rem;
   cursor: pointer;
   transition: background 0.2s ease;
+  font-size: 0.95rem;
 }
 
 .dropdown-item:hover {
@@ -180,13 +184,21 @@
 .dropdown-empty {
   padding: 0.75rem 1rem;
   color: #64748b;
+  font-style: italic;
 }
 
 /* Tag Input */
 .tag-input-container {
   border: 1px solid #e2e8f0;
   border-radius: 0.5rem;
-  padding: 0.5rem;
+  padding: 0.75rem;
+  background: white;
+  transition: border-color 0.2s;
+}
+
+.tag-input-container:focus-within {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(37, 211, 102, 0.2);
 }
 
 .tag-container {
@@ -199,120 +211,159 @@
 .tag-item {
   background: var(--tag-bg);
   color: var(--tag-color);
-  padding: 0.25rem 0.75rem;
-  border-radius: 999px;
-  font-size: 0.875rem;
-  display: inline-flex;
+  padding: 0.35rem 0.75rem;
+  border-radius: 1rem;
+  font-size: 0.85rem;
+  display: flex;
   align-items: center;
-  gap: 0.5rem;
+  font-weight: 500;
 }
 
 .tag-remove {
+  color: var(--tag-remove);
+  margin-left: 0.5rem;
   cursor: pointer;
-  font-weight: 700;
-  transition: color 0.15s ease;
+  font-weight: bold;
+  font-size: 1.1rem;
+  line-height: 1;
 }
 
 .tag-remove:hover {
-  color: color-mix(in srgb, var(--tag-color) 80%, black);
+  color: #c53030;
 }
 
 .tag-input {
-  width: 100%;
+  flex: 1;
+  min-width: 120px;
   border: none;
-  padding: 0.25rem;
   outline: none;
+  padding: 0.25rem;
+  font-size: 1rem;
+}
+
+/* Guidelines and Rules */
+.submission-guidelines,
+.guide-section {
+  background: var(--guide-bg);
+  border: 1px solid var(--guide-border);
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  margin: 2rem 0;
+}
+
+.submission-guidelines h3,
+.guide-section h3 {
+  color: var(--primary-hover);
+  margin-top: 0;
+  font-size: 1.35rem;
+  border-bottom: 1px solid var(--guide-border);
+  padding-bottom: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.submission-guidelines ul,
+.rules-section ol,
+.guide-section ul,
+.guide-section ol {
+  padding-left: 1.5rem;
+  margin: 1rem 0;
+}
+
+.submission-guidelines li,
+.rules-section li,
+.guide-section li {
+  margin-bottom: 0.5rem;
+  line-height: 1.5;
+}
+
+.note-section {
+  background: #feebc8;
+  border-left: 4px solid #dd6b20;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+  border-radius: 0 0.5rem 0.5rem 0;
+}
+
+.note-section p {
+  margin: 0.5rem 0;
+}
+
+.rules-section {
+  background: #ebf8ff;
+  border-left: 4px solid #3182ce;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+  border-radius: 0 0.5rem 0.5rem 0;
+}
+
+.guide-subsection {
+  margin: 1.5rem 0;
+}
+
+.guide-subsection h4,
+.guide-subsection h5 {
+  color: #2d3748;
+  margin: 1.25rem 0 0.75rem;
+  font-size: 1.15rem;
+}
+
+.guide-subsection h5 {
+  font-size: 1.05rem;
+  color: #4a5568;
+}
+
+.method {
+  background: white;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  margin: 1rem 0;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+}
+
+.faq-item {
+  margin: 1rem 0;
+  padding-bottom: 1rem;
+  border-bottom: 1px dashed #cbd5e0;
+}
+
+.faq-item p {
+  margin: 0.25rem 0;
+}
+
+.faq-item em {
+  font-style: italic;
 }
 
 /* Submit Button */
 .submit-button {
+  display: block;
   width: 100%;
-  padding: 0.875rem 1.5rem;
+  padding: 1rem;
   background: var(--primary-color);
   color: white;
-  font-weight: 500;
-  border-radius: 0.5rem;
+  font-weight: 600;
+  font-size: 1.1rem;
   border: none;
+  border-radius: 0.75rem;
   cursor: pointer;
-  transition: background 0.2s ease;
+  transition: all 0.3s ease;
+  margin: 2rem 0;
+  position: relative;
 }
 
-.submit-button:hover:not(:disabled) {
+.submit-button:hover {
   background: var(--primary-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
 }
 
 .submit-button:disabled {
-  opacity: 0.7;
+  background: #a0aec0;
   cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
 }
 
-/* Existing Group Popup */
-.existing-group-popup {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 1rem;
-  z-index: 100;
-}
-
-.popup-content {
-  background: white;
-  border-radius: 1rem;
-  padding: 1.5rem;
-  max-width: 28rem;
-  width: 100%;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-}
-
-.popup-content h3 {
-  font-size: 1.25rem;
-  font-weight: 600;
-  margin-bottom: 0.5rem;
-}
-
-.popup-content p {
-  color: #64748b;
-  margin-bottom: 1.5rem;
-}
-
-.popup-buttons {
-  display: flex;
-  gap: 1rem;
-  justify-content: flex-end;
-}
-
-.popup-close {
-  padding: 0.5rem 1rem;
-  border: 1px solid #e2e8f0;
-  border-radius: 0.5rem;
-  background: white;
-  color: #64748b;
-  cursor: pointer;
-  transition: all 0.15s ease;
-}
-
-.popup-close:hover {
-  background: #f1f5f9;
-}
-
-.popup-open {
-  background: var(--primary-color);
-  color: white;
-  padding: 0.5rem 1rem;
-  border: none;
-  border-radius: 0.5rem;
-  cursor: pointer;
-  transition: background 0.15s ease;
-}
-
-.popup-open:hover {
-  background: var(--primary-hover);
-}
-
-/* Spinner */
 .spinner-container {
   display: flex;
   align-items: center;
@@ -321,66 +372,101 @@
 }
 
 .spinner {
-  width: 1.25rem;
-  height: 1.25rem;
+  width: 24px;
+  height: 24px;
   animation: spin 1s linear infinite;
 }
 
 @keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
-/* Responsive Design */
+/* Existing Group Popup */
+.existing-group-popup {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+}
+
+.popup-content {
+  background: white;
+  padding: 2rem;
+  border-radius: 1rem;
+  text-align: center;
+  max-width: 400px;
+  width: 90%;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+}
+
+.popup-content h3 {
+  margin-top: 0;
+  color: #e53e3e;
+}
+
+.popup-buttons {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1.5rem;
+  justify-content: center;
+}
+
+.popup-close,
+.popup-open {
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.popup-close {
+  background: #e2e8f0;
+  color: #4a5568;
+}
+
+.popup-close:hover {
+  background: #cbd5e0;
+}
+
+.popup-open {
+  background: var(--primary-color);
+  color: white;
+}
+
+.popup-open:hover {
+  background: var(--primary-hover);
+}
+
+/* Responsive Adjustments */
 @media (max-width: 768px) {
-  .add-whatsapp-container,
-  .add-telegram-container {
-    padding-top: 120px;
+  .add-whatsapp-container {
+    padding: 120px 1rem 1rem;
   }
   
-  .main-header {
-    padding: 15px 0;
+  .form-content {
+    padding: 1.5rem;
   }
-
-  .logo-section {
-    margin-top: 30px;
-  }
-
+  
   .form-header {
     font-size: 1.5rem;
   }
-
-  .dropdown-item {
-    padding: 0.5rem;
-  }
-}
-
-@media (max-width: 480px) {
-  .add-whatsapp-container,
-  .add-telegram-container {
-    padding-top: 110px;
-    padding-left: 10px;
-    padding-right: 10px;
+  
+  .popup-buttons {
+    flex-direction: column;
+    gap: 0.75rem;
   }
   
-  .main-header h1 {
-    font-size: 1.75rem;
-  }
-  
-  .main-header h2 {
-    font-size: 1rem;
-  }
-  
-  .site-logo {
-    max-width: 160px;
-  }
-
-  .form-content {
-    padding: 1rem;
-  }
-
-  .submit-button {
-    padding: 0.75rem 1rem;
+  .popup-close,
+  .popup-open {
+    width: 100%;
   }
 }
