@@ -4,7 +4,7 @@ import { doc, getDoc, addDoc, collection, query, where, getDocs } from 'firebase
 import { useNavigate } from 'react-router-dom';
 import '../css/AddTelegramGroup.css';
 
-const AddTelegramGrp = () => {
+const AddTelegramGroup = () => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     name: '',
@@ -17,11 +17,10 @@ const AddTelegramGrp = () => {
   });
   const [tags, setTags] = useState([]);
   const [tagInput, setTagInput] = useState('');
-  const [linkError, setLinkError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showExistingPopup, setShowExistingPopup] = useState(false);
-  const [existingGroup, setExistingGroup] = useState('');
-  
+  const [existingGroup, setExistingGroup] = useState(null);
+
   // Dropdown states
   const [categories, setCategories] = useState([]);
   const [countries, setCountries] = useState([]);
@@ -32,7 +31,7 @@ const AddTelegramGrp = () => {
   const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
   const [showCountryDropdown, setShowCountryDropdown] = useState(false);
   const [showLanguageDropdown, setShowLanguageDropdown] = useState(false);
-  
+
   // Input values for dropdowns
   const [categoryInputValue, setCategoryInputValue] = useState('');
   const [countryInputValue, setCountryInputValue] = useState('');
@@ -43,7 +42,7 @@ const AddTelegramGrp = () => {
   const countryRef = useRef(null);
   const languageRef = useRef(null);
 
-  const telegramLinkPattern = /^https:\/\/t\.me\/([a-zA-Z0-9_]{5,32}|[+][a-zA-Z0-9-]+)$/;
+  const telegramLinkPattern = /^https:\/\/t\.me\/(?:\+[a-zA-Z0-9_-]{5,32}|[a-zA-Z0-9_]{5,32})$|^(\+[a-zA-Z0-9_-]{5,32}|[a-zA-Z0-9_]{5,32})$/;
 
   // Click outside handler
   useEffect(() => {
@@ -64,7 +63,6 @@ const AddTelegramGrp = () => {
         setFilteredLanguages(languages);
       }
     };
-
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [categories, countries, languages, formData]);
@@ -78,11 +76,9 @@ const AddTelegramGrp = () => {
           getDoc(doc(db, 'dropdowns', 'countries')),
           getDoc(doc(db, 'dropdowns', 'languages'))
         ]);
-
         const sortedCategories = categoriesSnap.exists() ? [...categoriesSnap.data().options].sort() : [];
         const sortedCountries = countriesSnap.exists() ? [...countriesSnap.data().options].sort() : [];
         const sortedLanguages = languagesSnap.exists() ? [...languagesSnap.data().options].sort() : [];
-
         setCategories(sortedCategories);
         setCountries(sortedCountries);
         setLanguages(sortedLanguages);
@@ -101,11 +97,9 @@ const AddTelegramGrp = () => {
   useEffect(() => {
     setCategoryInputValue(formData.category);
   }, [formData.category]);
-
   useEffect(() => {
     setCountryInputValue(formData.country);
   }, [formData.country]);
-
   useEffect(() => {
     setLanguageInputValue(formData.language);
   }, [formData.language]);
@@ -114,7 +108,7 @@ const AddTelegramGrp = () => {
   const handleCategorySearch = (value) => {
     setCategoryInputValue(value);
     setFilteredCategories(
-      value ? categories.filter(c => c.toLowerCase().includes(value.toLowerCase())) 
+      value ? categories.filter(c => c.toLowerCase().includes(value.toLowerCase()))
       : categories
     );
   };
@@ -122,7 +116,7 @@ const AddTelegramGrp = () => {
   const handleCountrySearch = (value) => {
     setCountryInputValue(value);
     setFilteredCountries(
-      value ? countries.filter(c => c.toLowerCase().includes(value.toLowerCase())) 
+      value ? countries.filter(c => c.toLowerCase().includes(value.toLowerCase()))
       : countries
     );
   };
@@ -130,7 +124,7 @@ const AddTelegramGrp = () => {
   const handleLanguageSearch = (value) => {
     setLanguageInputValue(value);
     setFilteredLanguages(
-      value ? languages.filter(l => l.toLowerCase().includes(value.toLowerCase())) 
+      value ? languages.filter(l => l.toLowerCase().includes(value.toLowerCase()))
       : languages
     );
   };
@@ -170,27 +164,17 @@ const AddTelegramGrp = () => {
     setFilteredLanguages(languages);
   };
 
-  // Rest of your existing handlers
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    if (name === 'description' && value.length > 250) return;
-    setFormData(prev => ({ ...prev, [name]: value }));
-    
-    if (name === 'link') {
-      setLinkError(telegramLinkPattern.test(value) ? '' : 'Invalid Telegram link format');
-    }
-  };
-
+  // Tag management
   const handleTags = (e) => {
     const value = e.target.value;
-    if ((value.endsWith(',') || value.endsWith(' ')) && value.trim().length > 0) {
-      const newTag = value.slice(0, -1).trim().substring(0, 15);
+    if (value.endsWith(',') && value.trim().length > 0) {
+      const newTag = value.slice(0, -1).trim().substring(0, 30);
       if (newTag && tags.length < 20) {
         setTags(prev => [...prev, newTag]);
         setTagInput('');
       }
     } else {
-      setTagInput(value.substring(0, 15));
+      setTagInput(value.substring(0, 30));
     }
   };
 
@@ -198,8 +182,10 @@ const AddTelegramGrp = () => {
     setTags(prev => prev.filter((_, i) => i !== index));
   };
 
+  // Form validation and submission
   const checkExistingGroup = async (link) => {
-    const q = query(collection(db, 'telegramGroups'), where('link', '==', link));
+    const normalizedLink = link.toLowerCase();
+    const q = query(collection(db, 'telegramGroups'), where('link', '==', normalizedLink));
     const querySnapshot = await getDocs(q);
     return !querySnapshot.empty;
   };
@@ -207,46 +193,47 @@ const AddTelegramGrp = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
-
     try {
-      const requiredFields = ['name', 'category', 'country', 'language', 'link', 'description'];
+      // Validate required fields
+      const requiredFields = ['name', 'category', 'country', 'language', 'link'];
       const allRequiredFilled = requiredFields.every(field => formData[field].trim());
-
       if (!allRequiredFilled || tags.length === 0) {
         alert('Please fill all required fields');
         return;
       }
 
+      // Validate dropdown selections
       if (!categories.includes(formData.category)) {
         alert('Please select a valid category from the dropdown');
         return;
       }
-
       if (!countries.includes(formData.country)) {
         alert('Please select a valid country from the dropdown');
         return;
       }
-
       if (!languages.includes(formData.language)) {
         alert('Please select a valid language from the dropdown');
         return;
       }
 
+      // Validate Telegram link format
       if (!telegramLinkPattern.test(formData.link)) {
-        alert('Invalid Telegram link format!\nMust be: https://t.me/...');
+        alert('Invalid Telegram link format!\nMust be: https://t.me/username or username');
         return;
       }
 
+      // Check for existing group
       if (await checkExistingGroup(formData.link)) {
         setExistingGroup(formData.link);
         setShowExistingPopup(true);
         return;
       }
 
+      // Submit to Firestore
       await addDoc(collection(db, 'telegramGroups'), {
         ...formData,
-        iconUrl: formData.iconUrl.trim(),
         tags,
+        iconUrl: formData.iconUrl.trim(),
         createdAt: new Date(),
         members: 0,
         rating: 0,
@@ -255,7 +242,6 @@ const AddTelegramGrp = () => {
 
       alert('Group/Channel submitted for review!');
       navigate('/');
-
     } catch (error) {
       console.error('Submission error:', error);
       alert('Submission failed: ' + error.message);
@@ -268,8 +254,8 @@ const AddTelegramGrp = () => {
     <div className="add-telegram-container">
       <header className="main-header">
         <div className="header-content">
-          <h1 
-            style={{ cursor: 'pointer' }} 
+          <h1
+            style={{ cursor: 'pointer' }}
             onClick={() => navigate('/')}
           >
             Multilinks.cloud
@@ -277,11 +263,9 @@ const AddTelegramGrp = () => {
           <h2>Find your community</h2>
         </div>
       </header>
-      
       <div className="add-telegram-form-container">
         <div className="form-content">
           <h1 className="form-header">Add Telegram Group/Channel</h1>
-
           <form onSubmit={handleSubmit} className="form-main">
             {/* Group Name */}
             <div className="form-group">
@@ -290,7 +274,7 @@ const AddTelegramGrp = () => {
                 type="text"
                 name="name"
                 value={formData.name}
-                onChange={handleChange}
+                onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
                 className="form-input"
                 placeholder="Enter group/channel name"
                 required
@@ -413,33 +397,34 @@ const AddTelegramGrp = () => {
                 type="url"
                 name="link"
                 value={formData.link}
-                onChange={handleChange}
-                className={`form-input ${linkError ? 'input-error' : ''}`}
-                placeholder="https://t.me/username or https://t.me/+InviteCode"
+                onChange={(e) => setFormData(prev => ({ ...prev, link: e.target.value }))}
+                className="form-input"
+                placeholder="https://t.me/+username or https://t.me/username or username"
                 required
               />
-              {linkError && <p className="form-error">{linkError}</p>}
+              {formData.link && !telegramLinkPattern.test(formData.link) && (
+                <p className="form-error">Invalid link format! Must be: https://t.me/username or username</p>
+              )}
             </div>
 
             {/* Description */}
             <div className="form-group">
-              <label className="form-label">
-                Description * ({250 - formData.description.length} characters remaining)
+              <label className="form-label-optional">
+                Description ({250 - formData.description.length} characters remaining)
               </label>
               <textarea
                 name="description"
                 value={formData.description}
-                onChange={handleChange}
+                onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
                 className="form-input textarea"
                 placeholder="Group/channel description..."
                 maxLength={250}
-                required
               />
             </div>
 
             {/* Tags */}
             <div className="form-group">
-              <label className="form-label">Tags * (Max 20 tags, 15 characters each)</label>
+              <label className="form-label">Tags * (Max 20 tags, 30 characters each)</label>
               <div className="tag-input-container">
                 <div className="tag-container">
                   {tags.map((tag, index) => (
@@ -455,7 +440,7 @@ const AddTelegramGrp = () => {
                     value={tagInput}
                     onChange={handleTags}
                     className="tag-input"
-                    placeholder="Type tags separated by commas or spaces..."
+                    placeholder="Type tags separated by comma..."
                   />
                 )}
               </div>
@@ -472,10 +457,10 @@ const AddTelegramGrp = () => {
             </div>
 
             {/* Submit Button */}
-            <button 
-              type="submit" 
-              className="submit-button telegram-btn" 
-              disabled={isSubmitting || linkError || tags.length === 0}
+            <button
+              type="submit"
+              className="submit-button"
+              disabled={isSubmitting}
             >
               {isSubmitting ? (
                 <div className="spinner-container">
@@ -486,186 +471,186 @@ const AddTelegramGrp = () => {
                 </div>
               ) : 'Submit Group/Channel'}
             </button>
-          </form>
+            
+            {/* Moved Guide Section inside form */}
+            <div className="guide-section">
+              <div className="note-section">
+                <h3>📢 Note:</h3>
+                <p><strong>Your Telegram group is publicly visible. Anyone can view and join using your shared invite link. Please follow the rules below before submitting.</strong></p>
+              </div>
 
-          {/* Guide Section */}
-          <div className="guide-section">
-            <div className="note-section">
-              <h3>📢 Note:</h3>
-              <p><strong>Your Telegram group is publicly visible. Anyone can view and join using your shared invite link. Please follow the rules below before submitting.</strong></p>
-            </div>
-
-            <div className="rules-section">
-              <h3>✅ Group Publisher Rules</h3>
-              <ol>
-                <li>Only submit groups you own or manage.</li>
-                <li>No adult, illegal, or spam content.</li>
-                <li>Group names and descriptions must match their actual purpose.</li>
-                <li>Avoid repeatedly submitting the same group.</li>
-                <li>Violators will be blacklisted permanently.</li>
-              </ol>
-            </div>
-
-            <div className="telegram-guide">
-              <h3>📘 Telegram Group Guide</h3>
-              
-              <div className="guide-subsection">
-                <h4>🔹 Telegram Group Types</h4>
+              <div className="rules-section">
+                <h3>✅ Group Publisher Rules</h3>
                 <ol>
-                  <li><strong>Private Group:</strong> Hidden from search. Only those with an invite link can join.</li>
-                  <li><strong>Public Group:</strong> Searchable and joinable via @username or invite link. Group name and chat history are visible.</li>
+                  <li>Only submit groups you own or manage.</li>
+                  <li>No adult, illegal, or spam content.</li>
+                  <li>Group names and descriptions must match their actual purpose.</li>
+                  <li>Avoid repeatedly submitting the same group.</li>
+                  <li>Violators will be blacklisted permanently.</li>
                 </ol>
               </div>
 
-              <div className="guide-subsection">
-                <h4>🛠️ How to Create a Telegram Group</h4>
-                <ol>
-                  <li>Open <strong>Telegram</strong>.</li>
-                  <li>Tap the <strong>menu</strong> (☰) or the <strong>pencil icon</strong> &gt; choose <strong>New Group</strong>.</li>
-                  <li>Select at least one contact.</li>
-                  <li>Enter a <strong>Group Name</strong> and optionally set a <strong>Group Photo</strong>.</li>
-                  <li>Tap <strong>Create</strong>.</li>
-                </ol>
-              </div>
-
-              <div className="guide-subsection">
-                <h4>🌐 How to Make It Public &amp; Get a Group Link</h4>
-                <ol>
-                  <li>Go to the group chat.</li>
-                  <li>Tap the group name at the top.</li>
-                  <li>Tap the <strong>✏️ Edit</strong> icon.</li>
-                  <li>Go to <strong>Group Type</strong>.</li>
-                  <li>Choose <strong>Public Group</strong>.</li>
-                  <li>Set a unique <strong>username</strong> (e.g., <code>@yourgroupname</code>) or use <strong>Invite Link</strong> to get a join link.</li>
-                </ol>
-              </div>
-
-              <div className="guide-subsection">
-                <h4>🚫 How to Revoke a Telegram Group Link</h4>
-                <div className="method">
-                  <h5><strong>To Revoke a Public Username:</strong></h5>
-                  <ul>
-                    <li>Change the username in Group Settings or make the group Private.</li>
-                  </ul>
-                </div>
-                <div className="method">
-                  <h5><strong>To Revoke a Private Invite Link:</strong></h5>
+              <div className="telegram-guide">
+                <h3>📘 Telegram Group Guide</h3>
+                <div className="guide-subsection">
+                  <h4>🔹 Telegram Group Types</h4>
                   <ol>
-                    <li>Open <strong>Group Info</strong> &gt; <strong>Invite Links</strong>.</li>
-                    <li>Tap the three-dot menu next to the link.</li>
-                    <li>Select <strong>Revoke link</strong>.</li>
+                    <li><strong>Private Group:</strong> Hidden from search. Only those with an invite link can join.</li>
+                    <li><strong>Public Group:</strong> Searchable and joinable via @username or invite link. Group name and chat history are visible.</li>
                   </ol>
                 </div>
-              </div>
 
-              <div className="guide-subsection">
-                <h4>👑 Group Admin Features</h4>
-                <ul>
-                  <li>Add/remove members.</li>
-                  <li>Promote other users to admin.</li>
-                  <li>Control who can post messages or media.</li>
-                  <li>Pin messages.</li>
-                  <li>Set slow mode or filters.</li>
-                  <li>Enable join approval.</li>
-                </ul>
-              </div>
-
-              <div className="guide-subsection">
-                <h4>💡 General Telegram Group Features</h4>
-                <ul>
-                  <li>Up to <strong>200,000 members</strong>.</li>
-                  <li>Public or private groups.</li>
-                  <li>Bot support, polls, reactions, and threads.</li>
-                  <li>End-to-end encryption in secret chats.</li>
-                  <li>Powerful moderation tools.</li>
-                </ul>
-              </div>
-
-              <div className="guide-subsection">
-                <h4>⚙️ Group Settings Overview</h4>
-                <ul>
-                  <li><strong>Group Type:</strong> Private or Public.</li>
-                  <li><strong>Username:</strong> Only for public groups.</li>
-                  <li><strong>Description:</strong> Optional, shown on group profile.</li>
-                  <li><strong>Permissions:</strong> Restrict media, links, messages, and more.</li>
-                  <li><strong>Slow Mode:</strong> Limit message frequency to reduce spam.</li>
-                </ul>
-              </div>
-
-              <div className="guide-subsection">
-                <h4>👥 Managing Group Members</h4>
-                <ul>
-                  <li>Add via contacts or invite link.</li>
-                  <li>Use "Join Requests" for manual approval.</li>
-                  <li>Remove spammers easily.</li>
-                  <li>Promote moderators/admins with specific rights.</li>
-                </ul>
-              </div>
-
-              <div className="guide-subsection">
-                <h4>📏 Telegram Limitations</h4>
-                <ul>
-                  <li>Max 200,000 members per group.</li>
-                  <li>Max file size for uploads: <strong>2 GB (or 4 GB for Premium users)</strong>.</li>
-                  <li>Unlimited chat history.</li>
-                </ul>
-              </div>
-
-              <div className="guide-subsection">
-                <h4>🤝 Group Etiquette Tips</h4>
-                <ul>
-                  <li>Respect all members.</li>
-                  <li>Stay on topic.</li>
-                  <li>Avoid excessive promotion or spam.</li>
-                  <li>Use pinned messages and announcements wisely.</li>
-                </ul>
-              </div>
-
-              <div className="guide-subsection">
-                <h4>❓ FAQs</h4>
-                <div className="faq-item">
-                  <p><strong>Q1:</strong> <em>How to submit a Telegram group to multilinks.cloud?</em></p>
-                  <p>→ Use the group submission form and paste your public invite link or @username.</p>
+                <div className="guide-subsection">
+                  <h4>🛠️ How to Create a Telegram Group</h4>
+                  <ol>
+                    <li>Open <strong>Telegram</strong>.</li>
+                    <li>Tap the <strong>menu</strong> (☰) or the <strong>pencil icon</strong> &gt; choose <strong>New Group</strong>.</li>
+                    <li>Select at least one contact.</li>
+                    <li>Enter a <strong>Group Name</strong> and optionally set a <strong>Group Photo</strong>.</li>
+                    <li>Tap <strong>Create</strong>.</li>
+                  </ol>
                 </div>
-                <div className="faq-item">
-                  <p><strong>Q2:</strong> <em>Can I remove my group from the site later?</em></p>
-                  <p>→ Yes, contact support via the site or email.</p>
+
+                <div className="guide-subsection">
+                  <h4>🌐 How to Make It Public & Get a Group Link</h4>
+                  <ol>
+                    <li>Go to the group chat.</li>
+                    <li>Tap the group name at the top.</li>
+                    <li>Tap the <strong>✏️ Edit</strong> icon.</li>
+                    <li>Go to <strong>Group Type</strong>.</li>
+                    <li>Choose <strong>Public Group</strong>.</li>
+                    <li>Set a unique <strong>username</strong> (e.g., <code>@yourgroupname</code>) or use <strong>Invite Link</strong> to get a join link.</li>
+                  </ol>
                 </div>
-                <div className="faq-item">
-                  <p><strong>Q3:</strong> <em>Is my Telegram link safe on this platform?</em></p>
-                  <p>→ Yes, but it's public. You can revoke or change it anytime from Telegram settings.</p>
+
+                <div className="guide-subsection">
+                  <h4>🚫 How to Revoke a Telegram Group Link</h4>
+                  <div className="method">
+                    <h5><strong>To Revoke a Public Username:</strong></h5>
+                    <ul>
+                      <li>Change the username in Group Settings or make the group Private.</li>
+                    </ul>
+                  </div>
+                  <div className="method">
+                    <h5><strong>To Revoke a Private Invite Link:</strong></h5>
+                    <ol>
+                      <li>Open <strong>Group Info</strong> &gt; <strong>Invite Links</strong>.</li>
+                      <li>Tap the three-dot menu next to the link.</li>
+                      <li>Select <strong>Revoke link</strong>.</li>
+                    </ol>
+                  </div>
+                  <p className="note">This will disable the current invite link. A new one can be generated anytime.</p>
+                </div>
+
+                <div className="guide-subsection">
+                  <h4>👑 Group Admin Features</h4>
+                  <ul>
+                    <li>Add/remove members.</li>
+                    <li>Promote other users to admin.</li>
+                    <li>Control who can post messages or media.</li>
+                    <li>Pin messages.</li>
+                    <li>Set slow mode or filters.</li>
+                    <li>Enable join approval.</li>
+                  </ul>
+                </div>
+
+                <div className="guide-subsection">
+                  <h4>💡 General Telegram Group Features</h4>
+                  <ul>
+                    <li>Up to <strong>200,000 members</strong>.</li>
+                    <li>Public or private groups.</li>
+                    <li>Bot support, polls, reactions, and threads.</li>
+                    <li>End-to-end encryption in secret chats.</li>
+                    <li>Powerful moderation tools.</li>
+                  </ul>
+                </div>
+
+                <div className="guide-subsection">
+                  <h4>⚙️ Group Settings Overview</h4>
+                  <ul>
+                    <li><strong>Group Type:</strong> Private or Public.</li>
+                    <li><strong>Username:</strong> Only for public groups.</li>
+                    <li><strong>Description:</strong> Optional, shown on group profile.</li>
+                    <li><strong>Permissions:</strong> Restrict media, links, messages, and more.</li>
+                    <li><strong>Slow Mode:</strong> Limit message frequency to reduce spam.</li>
+                  </ul>
+                </div>
+
+                <div className="guide-subsection">
+                  <h4>👥 Managing Group Members</h4>
+                  <ul>
+                    <li>Add via contacts or invite link.</li>
+                    <li>Use "Join Requests" for manual approval.</li>
+                    <li>Remove spammers easily.</li>
+                    <li>Promote moderators/admins with specific rights.</li>
+                  </ul>
+                </div>
+
+                <div className="guide-subsection">
+                  <h4>📏 Telegram Limitations</h4>
+                  <ul>
+                    <li>Max 200,000 members per group.</li>
+                    <li>Max file size for uploads: <strong>2 GB (or 4 GB for Premium users)</strong>.</li>
+                    <li>Unlimited chat history.</li>
+                  </ul>
+                </div>
+
+                <div className="guide-subsection">
+                  <h4>🤝 Group Etiquette Tips</h4>
+                  <ul>
+                    <li>Respect all members.</li>
+                    <li>Stay on topic.</li>
+                    <li>Avoid excessive promotion or spam.</li>
+                    <li>Use pinned messages and announcements wisely.</li>
+                  </ul>
+                </div>
+
+                <div className="guide-subsection">
+                  <h4>❓ FAQs</h4>
+                  <div className="faq-item">
+                    <p><strong>Q1:</strong> <em>How to submit a Telegram group to multilinks.cloud?</em></p>
+                    <p>→ Use the group submission form and paste your public invite link or @username.</p>
+                  </div>
+                  <div className="faq-item">
+                    <p><strong>Q2:</strong> <em>Can I remove my group from the site later?</em></p>
+                    <p>→ Yes, contact support via the site or email.</p>
+                  </div>
+                  <div className="faq-item">
+                    <p><strong>Q3:</strong> <em>Is my Telegram link safe on this platform?</em></p>
+                    <p>→ Yes, but it's public. You can revoke or change it anytime from Telegram settings.</p>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-
-          {/* Existing Group Popup */}
-          {showExistingPopup && (
-            <div className="existing-group-popup">
-              <div className="popup-content">
-                <h3>Group/Channel Exists</h3>
-                <p>This Telegram group/channel is already listed in our directory.</p>
-                <div className="popup-buttons">
-                  <button 
-                    className="popup-close"
-                    onClick={() => setShowExistingPopup(false)}
-                  >
-                    Close
-                  </button>
-                  <button 
-                    className="popup-open telegram-btn"
-                    onClick={() => window.open(existingGroup, '_blank')}
-                  >
-                    Open Group
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
+          </form>
         </div>
       </div>
+
+      {/* Existing Group Popup */}
+      {showExistingPopup && (
+        <div className="existing-group-popup">
+          <div className="popup-content">
+            <h3>Group/Channel Exists</h3>
+            <p>This Telegram group/channel is already listed in our directory.</p>
+            <div className="popup-buttons">
+              <button
+                className="popup-close"
+                onClick={() => setShowExistingPopup(false)}
+              >
+                Close
+              </button>
+              <button
+                className="popup-open"
+                onClick={() => window.open(existingGroup, '_blank')}
+              >
+                Open Group
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
 
-export default AddTelegramGrp;
+export default AddTelegramGroup;

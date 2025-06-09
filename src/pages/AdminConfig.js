@@ -112,24 +112,30 @@ const AdminConfig = () => {
     fetchCredentials();
   }, []);
 
-  // Check approval status for groups
+  // Check approval status for groups (FIXED: Check both WA and TG collections)
   useEffect(() => {
     const checkApprovalStatus = async () => {
       const statusMap = {};
       
       // Check each group in parallel
       const promises = groupManagement.groups.map(async (group) => {
-        const targetCollection = groupManagement.platform === 'whatsapp' 
-          ? 'ApprovedWA' 
-          : 'ApprovedTG';
-        
-        const q = query(
-          collection(db, targetCollection),
-          where('originalId', '==', group.id)
+        // Check both WhatsApp and Telegram approval collections
+        const qWA = query(
+          collection(db, 'ApprovedWA'),
+          where('link', '==', group.link)
         );
         
-        const snapshot = await getDocs(q);
-        return { id: group.id, approved: !snapshot.empty };
+        const qTG = query(
+          collection(db, 'ApprovedTG'),
+          where('link', '==', group.link)
+        );
+        
+        const [snapshotWA, snapshotTG] = await Promise.all([
+          getDocs(qWA),
+          getDocs(qTG)
+        ]);
+        
+        return { id: group.id, approved: !snapshotWA.empty || !snapshotTG.empty };
       });
       
       const results = await Promise.all(promises);
@@ -145,7 +151,7 @@ const AdminConfig = () => {
     if (groupManagement.groups.length > 0) {
       checkApprovalStatus();
     }
-  }, [groupManagement.groups, groupManagement.platform]);
+  }, [groupManagement.groups]); // Removed platform dependency
 
   // Logout handler
   const handleLogout = async () => {

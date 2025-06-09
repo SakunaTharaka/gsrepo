@@ -168,17 +168,17 @@ const AddWhatsappGroup = () => {
     setFilteredLanguages(languages);
   };
 
-  // Tag management
+  // Tag management - Updated to only separate by comma and increase character limit to 30
   const handleTags = (e) => {
     const value = e.target.value;
-    if ((value.endsWith(',') || value.endsWith(' ')) && value.trim().length > 0) {
-      const newTag = value.slice(0, -1).trim().substring(0, 15);
+    if (value.endsWith(',') && value.trim().length > 0) {
+      const newTag = value.slice(0, -1).trim().substring(0, 30);
       if (newTag && tags.length < 20) {
         setTags(prev => [...prev, newTag]);
         setTagInput('');
       }
     } else {
-      setTagInput(value.substring(0, 15));
+      setTagInput(value.substring(0, 30));
     }
   };
 
@@ -199,8 +199,8 @@ const AddWhatsappGroup = () => {
     setIsSubmitting(true);
 
     try {
-      // Validate required fields
-      const requiredFields = ['name', 'category', 'country', 'language', 'link', 'description'];
+      // Validate required fields (description is now optional)
+      const requiredFields = ['name', 'category', 'country', 'language', 'link'];
       const allRequiredFilled = requiredFields.every(field => formData[field].trim());
 
       if (!allRequiredFilled || tags.length === 0) {
@@ -416,10 +416,10 @@ const AddWhatsappGroup = () => {
               )}
             </div>
 
-            {/* Description */}
+            {/* Description - Now Optional */}
             <div className="form-group">
-              <label className="form-label">
-                Description * ({250 - formData.description.length} characters remaining)
+              <label className="form-label-optional">
+                Description ({250 - formData.description.length} characters remaining)
               </label>
               <textarea
                 name="description"
@@ -428,13 +428,12 @@ const AddWhatsappGroup = () => {
                 className="form-input textarea"
                 placeholder="Group description..."
                 maxLength={250}
-                required
               />
             </div>
 
             {/* Tags */}
             <div className="form-group">
-              <label className="form-label">Tags * (Max 20 tags, 15 characters each)</label>
+              <label className="form-label">Tags * (Max 20 tags, 30 characters each)</label>
               <div className="tag-input-container">
                 <div className="tag-container">
                   {tags.map((tag, index) => (
@@ -450,7 +449,7 @@ const AddWhatsappGroup = () => {
                     value={tagInput}
                     onChange={handleTags}
                     className="tag-input"
-                    placeholder="Type tags separated by commas..."
+                    placeholder="Type tags separated by comma..."
                   />
                 )}
               </div>

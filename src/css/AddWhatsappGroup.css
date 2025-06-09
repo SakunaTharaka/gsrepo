@@ -233,12 +233,17 @@
 }
 
 .tag-input {
-  flex: 1;
-  min-width: 120px;
-  border: none;
-  outline: none;
-  padding: 0.25rem;
-  font-size: 1rem;
+    flex: 1;
+    min-width: 120px;
+    border: none;
+    outline: none;
+    padding: 0.25rem;
+    font-size: 1rem;
+    white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
+    width: 100%;
+    text-align: center; /* Added this line */
 }
 
 /* Guidelines and Rules */
