@@ -14,6 +14,8 @@ function ViewGroup() {
   const [reportText, setReportText] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [reportStatus, setReportStatus] = useState('');
+  const [showAddGroupPopup, setShowAddGroupPopup] = useState(false);
+  const [showAdminButton, setShowAdminButton] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -58,6 +60,15 @@ function ViewGroup() {
     };
 
     fetchGroup();
+
+    const handleKeyPress = (e) => {
+      if (e.ctrlKey && e.shiftKey && e.key === 'A') {
+        setShowAdminButton(prev => !prev);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyPress);
+    return () => window.removeEventListener('keydown', handleKeyPress);
   }, [platform, groupId]);
 
   const handleReportSubmit = async () => {
@@ -86,6 +97,20 @@ function ViewGroup() {
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleAddWhatsAppGroup = () => {
+    const currentOrigin = window.location.origin;
+    const fullUrl = `${currentOrigin}/add-whatsapp-group`;
+    window.open(fullUrl, '_blank', 'noopener,noreferrer');
+    setShowAddGroupPopup(false);
+  };
+
+  const handleAddTelegramGroup = () => {
+    const currentOrigin = window.location.origin;
+    const fullUrl = `${currentOrigin}/add-telegram-group`;
+    window.open(fullUrl, '_blank', 'noopener,noreferrer');
+    setShowAddGroupPopup(false);
   };
 
   if (loading) {
@@ -135,131 +160,178 @@ function ViewGroup() {
   const groupIcon = group.iconUrl || group.avatar;
 
   return (
-    <div className="view-group-container">
-      <header className="main-header">
-        <div className="header-content">
-          <h1 
-            className="clickable-logo" 
-            onClick={() => navigate('/')}
-          >
-            Multilinks.cloud
-          </h1>
-          <h2>Find your community</h2>
-        </div>
-      </header>
+    <div className="homepage-container">
+      {showAdminButton && (
+        <button className="admin-button" onClick={() => navigate('/login')}>
+          ⚙️ Admin Panel
+        </button>
+      )}
 
-      <div className="group-icon-container">
-        {groupIcon ? (
-          <img src={groupIcon} alt={group.name} className="group-icon" />
-        ) : (
-          <div className={`default-group-icon ${platform}`}>
-            {platform === 'whatsapp' ? 'WA' : 'TG'}
-            <FaStar className="verified-star" />
+      {/* Add Group Popup */}
+      {showAddGroupPopup && (
+        <div className="add-group-popup">
+          <div className="popup-content">
+            <div className="popup-header">
+              <h3>Add Your Group</h3>
+              <button className="close-popup" onClick={() => setShowAddGroupPopup(false)}>
+                &times;
+              </button>
+            </div>
+            <div className="popup-options">
+              <button className="popup-option whatsapp" onClick={handleAddWhatsAppGroup}>
+                <div className="option-icon">
+                  <img src="/whatsapp.png" alt="WhatsApp" />
+                </div>
+                <span>Add WhatsApp Group</span>
+              </button>
+              <button className="popup-option telegram" onClick={handleAddTelegramGroup}>
+                <div className="option-icon">
+                  <img src="/telegram.png" alt="Telegram" />
+                </div>
+                <span>Add Telegram Group</span>
+              </button>
+            </div>
           </div>
-        )}
-      </div>
+        </div>
+      )}
 
-      <div className="group-header">
-        <h1 className="group-name">{group.name}</h1>
-        <span className={`platform-tag ${platform}`}>
-          {platform === 'whatsapp' ? 'WhatsApp' : 'Telegram'}
-        </span>
-      </div>
-
-      <button 
-        className="report-button"
-        onClick={() => setShowReport(!showReport)}
-      >
-        <FaFlag /> Report Group
-      </button>
-
-      {showReport && (
-        <div className="report-section">
-          <textarea
-            value={reportText}
-            onChange={(e) => setReportText(e.target.value)}
-            placeholder="Please describe the issue (max 150 characters)"
-            maxLength={150}
-            className="report-textarea"
-          />
-          <div className="report-controls">
-            <span className="char-count">{150 - reportText.length} characters remaining</span>
-            <button
-              className="submit-report"
-              onClick={handleReportSubmit}
-              disabled={!reportText.trim() || isSubmitting}
+      {/* Navigation Bar */}
+      <nav className="navbar">
+        <div className="nav-container">
+          <a href="/" className="logo-nav">
+            <div className="logo-icon">
+              <img src="/logo512.png" alt="Multilinks Logo" />
+            </div>
+            Multilinks
+          </a>
+          <div className="nav-actions">
+            <button className="nav-btn nav-btn-outline" onClick={() => navigate('/')}>
+              Browse
+            </button>
+            <button 
+              className="nav-btn nav-btn-primary" 
+              onClick={() => setShowAddGroupPopup(true)}
             >
-              {isSubmitting ? 'Submitting...' : 'Submit Report'}
+              Add Group
             </button>
           </div>
         </div>
-      )}
+      </nav>
 
-      {reportStatus && <div className="report-status">{reportStatus}</div>}
+      <div className="view-group-container">
+        <div className="group-icon-container">
+          {groupIcon ? (
+            <img src={groupIcon} alt={group.name} className="group-icon" />
+          ) : (
+            <div className={`default-group-icon ${platform}`}>
+              {platform === 'whatsapp' ? 'WA' : 'TG'}
+              <FaStar className="verified-star" />
+            </div>
+          )}
+        </div>
 
-      <div className="group-meta">
-        <div className="meta-item">
-          <span className="meta-label">Category:</span>
-          {group.category}
+        <div className="group-header">
+          <h1 className="group-name">{group.name}</h1>
+          <span className={`platform-tag ${platform}`}>
+            {platform === 'whatsapp' ? 'WhatsApp' : 'Telegram'}
+          </span>
         </div>
-        <div className="meta-item">
-          <span className="meta-label">Country:</span>
-          {group.country}
-        </div>
-        <div className="meta-item">
-          <span className="meta-label">Language:</span>
-          {group.language}
-        </div>
-      </div>
 
-      {group.description && (
-        <div className="group-description">
-          <h3>Description</h3>
-          <p>{group.description}</p>
-        </div>
-      )}
+        <button 
+          className="report-button"
+          onClick={() => setShowReport(!showReport)}
+        >
+          <FaFlag /> Report Group
+        </button>
 
-      {group.tags?.length > 0 && (
-        <div className="group-tags">
-          <h3>Tags</h3>
-          <div className="tags-container">
-            {group.tags.map(tag => (
-              <span key={tag} className="tag">{tag}</span>
-            ))}
+        {showReport && (
+          <div className="report-section">
+            <textarea
+              value={reportText}
+              onChange={(e) => setReportText(e.target.value)}
+              placeholder="Please describe the issue (max 150 characters)"
+              maxLength={150}
+              className="report-textarea"
+            />
+            <div className="report-controls">
+              <span className="char-count">{150 - reportText.length} characters remaining</span>
+              <button
+                className="submit-report"
+                onClick={handleReportSubmit}
+                disabled={!reportText.trim() || isSubmitting}
+              >
+                {isSubmitting ? 'Submitting...' : 'Submit Report'}
+              </button>
+            </div>
+          </div>
+        )}
+
+        {reportStatus && <div className="report-status">{reportStatus}</div>}
+
+        <div className="group-meta">
+          <div className="meta-item">
+            <span className="meta-label">Category:</span>
+            {group.category}
+          </div>
+          <div className="meta-item">
+            <span className="meta-label">Country:</span>
+            {group.country}
+          </div>
+          <div className="meta-item">
+            <span className="meta-label">Language:</span>
+            {group.language}
           </div>
         </div>
-      )}
 
-      <div className="action-section">
-        <a 
-          href={group.link} 
-          target="_blank" 
-          rel="noopener noreferrer" 
-          className={`direct-link ${platform}`}
-        >
-          Join {platform === 'whatsapp' ? 'WhatsApp Group' : 'Telegram Channel'}
-        </a>
+        {group.description && (
+          <div className="group-description">
+            <h3>Description</h3>
+            <p>{group.description}</p>
+          </div>
+        )}
 
-        <div className="terms-conditions">
-          <h4>Terms & Conditions:</h4>
-          <ul>
-            <li>You must be at least 13 years old to join</li>
-            <li>Must comply with all applicable laws and group rules</li>
-            <li>You're solely responsible for your interactions</li>
-            <li>We don't monitor group content continuously</li>
-            <li>Privacy practices may vary by group</li>
-            <li>We're not responsible for any group activities</li>
-            <li>False reports may lead to account suspension</li>
-          </ul>
+        {group.tags?.length > 0 && (
+          <div className="group-tags">
+            <h3>Tags</h3>
+            <div className="tags-container">
+              {group.tags.map(tag => (
+                <span key={tag} className="tag">{tag}</span>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <div className="action-section">
+          <a 
+            href={group.link} 
+            target="_blank" 
+            rel="noopener noreferrer" 
+            className={`direct-link ${platform}`}
+          >
+            Join {platform === 'whatsapp' ? 'WhatsApp Group' : 'Telegram Channel'}
+          </a>
+
+          <div className="terms-conditions">
+            <h4>Terms & Conditions:</h4>
+            <ul>
+              <li>You must be at least 13 years old to join</li>
+              <li>Must comply with all applicable laws and group rules</li>
+              <li>You're solely responsible for your interactions</li>
+              <li>We don't monitor group content continuously</li>
+              <li>Privacy practices may vary by group</li>
+              <li>We're not responsible for any group activities</li>
+              <li>False reports may lead to account suspension</li>
+            </ul>
+          </div>
         </div>
-      </div>
 
-      <button 
-        className="back-button"
-        onClick={() => navigate('/')}
-      >
-        &larr; Back to Groups
-      </button>
+        <button 
+          className="back-button"
+          onClick={() => navigate('/')}
+        >
+          &larr; Back to Groups
+        </button>
+      </div>
     </div>
   );
 }

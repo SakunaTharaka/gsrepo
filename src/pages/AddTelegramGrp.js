@@ -20,6 +20,8 @@ const AddTelegramGroup = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showExistingPopup, setShowExistingPopup] = useState(false);
   const [existingGroup, setExistingGroup] = useState(null);
+  const [showAddGroupPopup, setShowAddGroupPopup] = useState(false);
+  const [showAdminButton, setShowAdminButton] = useState(false);
 
   // Dropdown states
   const [categories, setCategories] = useState([]);
@@ -44,6 +46,18 @@ const AddTelegramGroup = () => {
 
   const telegramLinkPattern = /^https:\/\/t\.me\/(?:\+[a-zA-Z0-9_-]{5,32}|[a-zA-Z0-9_]{5,32})$|^(\+[a-zA-Z0-9_-]{5,32}|[a-zA-Z0-9_]{5,32})$/;
 
+  // Admin button shortcut
+  useEffect(() => {
+    const handleKeyPress = (e) => {
+      if (e.ctrlKey && e.shiftKey && e.key === 'A') {
+        setShowAdminButton(prev => !prev);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyPress);
+    return () => window.removeEventListener('keydown', handleKeyPress);
+  }, []);
+
   // Click outside handler
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -63,6 +77,7 @@ const AddTelegramGroup = () => {
         setFilteredLanguages(languages);
       }
     };
+
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [categories, countries, languages, formData]);
@@ -250,229 +265,290 @@ const AddTelegramGroup = () => {
     }
   };
 
+  const handleAddWhatsAppGroup = () => {
+    const currentOrigin = window.location.origin;
+    const fullUrl = `${currentOrigin}/add-whatsapp-group`;
+    window.open(fullUrl, '_blank', 'noopener,noreferrer');
+    setShowAddGroupPopup(false);
+  };
+
+  const handleAddTelegramGroup = () => {
+    // Already on this page
+    setShowAddGroupPopup(false);
+  };
+
   return (
-    <div className="add-telegram-container">
-      <header className="main-header">
-        <div className="header-content">
-          <h1
-            style={{ cursor: 'pointer' }}
-            onClick={() => navigate('/')}
-          >
-            Multilinks.cloud
-          </h1>
-          <h2>Find your community</h2>
+    <div className="homepage-container">
+      {showAdminButton && (
+        <button className="admin-button" onClick={() => navigate('/login')}>
+          ⚙️ Admin Panel
+        </button>
+      )}
+
+      {/* Add Group Popup */}
+      {showAddGroupPopup && (
+        <div className="add-group-popup">
+          <div className="popup-content">
+            <div className="popup-header">
+              <h3>Add Your Group</h3>
+              <button className="close-popup" onClick={() => setShowAddGroupPopup(false)}>
+                &times;
+              </button>
+            </div>
+            <div className="popup-options">
+              <button className="popup-option whatsapp" onClick={handleAddWhatsAppGroup}>
+                <div className="option-icon">
+                  <img src="/whatsapp.png" alt="WhatsApp" />
+                </div>
+                <span>Add WhatsApp Group</span>
+              </button>
+              <button className="popup-option telegram" onClick={handleAddTelegramGroup}>
+                <div className="option-icon">
+                  <img src="/telegram.png" alt="Telegram" />
+                </div>
+                <span>Add Telegram Group</span>
+              </button>
+            </div>
+          </div>
         </div>
-      </header>
-      <div className="add-telegram-form-container">
-        <div className="form-content">
-          <h1 className="form-header">Add Telegram Group/Channel</h1>
-          <form onSubmit={handleSubmit} className="form-main">
-            {/* Group Name */}
-            <div className="form-group">
-              <label className="form-label">Group/Channel Name </label>
-              <input
-                type="text"
-                name="name"
-                value={formData.name}
-                onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                className="form-input"
-                placeholder="Enter group/channel name"
-                required
-                maxLength={60}
-              />
-            </div>
+      )}
 
-            {/* Category Dropdown */}
-            <div className="form-group dropdown-container" ref={categoryRef}>
-              <label className="form-label">Category </label>
-              <div className="input-wrapper">
+      {/* Navigation Bar */}
+      <nav className="navbar">
+        <div className="nav-container">
+          <a href="/" className="logo-nav">
+            <div className="logo-icon">
+              <img src="/logo512.png" alt="Multilinks Logo" />
+            </div>
+            Multilinks
+          </a>
+          <div className="nav-actions">
+            <button className="nav-btn nav-btn-outline" onClick={() => navigate('/')}>
+              Browse
+            </button>
+            <button 
+              className="nav-btn nav-btn-primary" 
+              onClick={() => setShowAddGroupPopup(true)}
+            >
+              Add Group
+            </button>
+          </div>
+        </div>
+      </nav>
+
+      <div className="add-telegram-container">
+        <div className="add-telegram-form-container">
+          <div className="form-content">
+            <h1 className="form-header">Add Telegram Group/Channel</h1>
+
+            <form onSubmit={handleSubmit} className="form-main">
+              {/* Group Name */}
+              <div className="form-group">
+                <label className="form-label">Group/Channel Name </label>
                 <input
                   type="text"
-                  value={categoryInputValue}
-                  onChange={(e) => handleCategorySearch(e.target.value)}
-                  onFocus={handleCategoryFocus}
+                  name="name"
+                  value={formData.name}
+                  onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
                   className="form-input"
-                  placeholder="Search category..."
+                  placeholder="Enter group/channel name"
                   required
+                  maxLength={60}
                 />
-                <span className="dropdown-arrow"></span>
               </div>
-              {showCategoryDropdown && (
-                <div className="dropdown-list">
-                  {filteredCategories.map((cat, i) => (
-                    <div
-                      key={i}
-                      className="dropdown-item"
-                      onMouseDown={(e) => {
-                        e.preventDefault();
-                        handleCategorySelect(cat);
-                      }}
-                    >
-                      {cat}
-                    </div>
-                  ))}
-                  {filteredCategories.length === 0 && (
-                    <div className="dropdown-empty">No categories found</div>
-                  )}
-                </div>
-              )}
-            </div>
 
-            {/* Country Dropdown */}
-            <div className="form-group dropdown-container" ref={countryRef}>
-              <label className="form-label">Country </label>
-              <div className="input-wrapper">
-                <input
-                  type="text"
-                  value={countryInputValue}
-                  onChange={(e) => handleCountrySearch(e.target.value)}
-                  onFocus={handleCountryFocus}
-                  className="form-input"
-                  placeholder="Search country..."
-                  required
-                />
-                <span className="dropdown-arrow"></span>
-              </div>
-              {showCountryDropdown && (
-                <div className="dropdown-list">
-                  {filteredCountries.map((country, i) => (
-                    <div
-                      key={i}
-                      className="dropdown-item"
-                      onMouseDown={(e) => {
-                        e.preventDefault();
-                        handleCountrySelect(country);
-                      }}
-                    >
-                      {country}
-                    </div>
-                  ))}
-                  {filteredCountries.length === 0 && (
-                    <div className="dropdown-empty">No countries found</div>
-                  )}
-                </div>
-              )}
-            </div>
-
-            {/* Language Dropdown */}
-            <div className="form-group dropdown-container" ref={languageRef}>
-              <label className="form-label">Language </label>
-              <div className="input-wrapper">
-                <input
-                  type="text"
-                  value={languageInputValue}
-                  onChange={(e) => handleLanguageSearch(e.target.value)}
-                  onFocus={handleLanguageFocus}
-                  className="form-input"
-                  placeholder="Search language..."
-                  required
-                />
-                <span className="dropdown-arrow"></span>
-              </div>
-              {showLanguageDropdown && (
-                <div className="dropdown-list">
-                  {filteredLanguages.map((lang, i) => (
-                    <div
-                      key={i}
-                      className="dropdown-item"
-                      onMouseDown={(e) => {
-                        e.preventDefault();
-                        handleLanguageSelect(lang);
-                      }}
-                    >
-                      {lang}
-                    </div>
-                  ))}
-                  {filteredLanguages.length === 0 && (
-                    <div className="dropdown-empty">No languages found</div>
-                  )}
-                </div>
-              )}
-            </div>
-
-            {/* Telegram Link */}
-            <div className="form-group">
-              <label className="form-label">Telegram Link </label>
-              <input
-                type="url"
-                name="link"
-                value={formData.link}
-                onChange={(e) => setFormData(prev => ({ ...prev, link: e.target.value }))}
-                className="form-input"
-                placeholder="https://t.me/+username or https://t.me/username or username"
-                required
-              />
-              {formData.link && !telegramLinkPattern.test(formData.link) && (
-                <p className="form-error">Invalid link format! Must be: https://t.me/username or username</p>
-              )}
-            </div>
-
-            {/* Description */}
-            <div className="form-group">
-              <label className="form-label-optional">
-                Description ({250 - formData.description.length} characters remaining)
-              </label>
-              <textarea
-                name="description"
-                value={formData.description}
-                onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-                className="form-input textarea"
-                placeholder="Group/channel description..."
-                maxLength={250}
-              />
-            </div>
-
-            {/* Tags */}
-            <div className="form-group">
-              <label className="form-label">Tags * (Max 20 tags, 30 characters each)</label>
-              <div className="tag-input-container">
-                <div className="tag-container">
-                  {tags.map((tag, index) => (
-                    <div key={index} className="tag-item">
-                      {tag}
-                      <span className="tag-remove" onClick={() => removeTag(index)}>×</span>
-                    </div>
-                  ))}
-                </div>
-                {tags.length < 20 && (
+              {/* Category Dropdown */}
+              <div className="form-group dropdown-container" ref={categoryRef}>
+                <label className="form-label">Category </label>
+                <div className="input-wrapper">
                   <input
                     type="text"
-                    value={tagInput}
-                    onChange={handleTags}
-                    className="tag-input"
-                    placeholder="Type tags separated by comma..."
+                    value={categoryInputValue}
+                    onChange={(e) => handleCategorySearch(e.target.value)}
+                    onFocus={handleCategoryFocus}
+                    className="form-input"
+                    placeholder="Search category..."
+                    required
                   />
+                  <span className="dropdown-arrow"></span>
+                </div>
+                {showCategoryDropdown && (
+                  <div className="dropdown-list">
+                    {filteredCategories.map((cat, i) => (
+                      <div
+                        key={i}
+                        className="dropdown-item"
+                        onMouseDown={(e) => {
+                          e.preventDefault();
+                          handleCategorySelect(cat);
+                        }}
+                      >
+                        {cat}
+                      </div>
+                    ))}
+                    {filteredCategories.length === 0 && (
+                      <div className="dropdown-empty">No categories found</div>
+                    )}
+                  </div>
                 )}
               </div>
-            </div>
 
-            {/* Guidelines */}
-            <div className="submission-guidelines">
-              <h3>Submission Guidelines</h3>
-              <ul>
-                <li>Groups must follow community guidelines</li>
-                <li>No spam or promotional content</li>
-                <li>Admin reserves right to remove listings</li>
-              </ul>
-            </div>
-
-            {/* Submit Button */}
-            <button
-              type="submit"
-              className="submit-button"
-              disabled={isSubmitting}
-            >
-              {isSubmitting ? (
-                <div className="spinner-container">
-                  <svg className="spinner" viewBox="0 0 24 24">
-                    <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                  </svg>
-                  Submitting...
+              {/* Country Dropdown */}
+              <div className="form-group dropdown-container" ref={countryRef}>
+                <label className="form-label">Country </label>
+                <div className="input-wrapper">
+                  <input
+                    type="text"
+                    value={countryInputValue}
+                    onChange={(e) => handleCountrySearch(e.target.value)}
+                    onFocus={handleCountryFocus}
+                    className="form-input"
+                    placeholder="Search country..."
+                    required
+                  />
+                  <span className="dropdown-arrow"></span>
                 </div>
-              ) : 'Submit Group/Channel'}
-            </button>
-            
-            {/* Moved Guide Section inside form */}
+                {showCountryDropdown && (
+                  <div className="dropdown-list">
+                    {filteredCountries.map((country, i) => (
+                      <div
+                        key={i}
+                        className="dropdown-item"
+                        onMouseDown={(e) => {
+                          e.preventDefault();
+                          handleCountrySelect(country);
+                        }}
+                      >
+                        {country}
+                      </div>
+                    ))}
+                    {filteredCountries.length === 0 && (
+                      <div className="dropdown-empty">No countries found</div>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* Language Dropdown */}
+              <div className="form-group dropdown-container" ref={languageRef}>
+                <label className="form-label">Language </label>
+                <div className="input-wrapper">
+                  <input
+                    type="text"
+                    value={languageInputValue}
+                    onChange={(e) => handleLanguageSearch(e.target.value)}
+                    onFocus={handleLanguageFocus}
+                    className="form-input"
+                    placeholder="Search language..."
+                    required
+                  />
+                  <span className="dropdown-arrow"></span>
+                </div>
+                {showLanguageDropdown && (
+                  <div className="dropdown-list">
+                    {filteredLanguages.map((lang, i) => (
+                      <div
+                        key={i}
+                        className="dropdown-item"
+                        onMouseDown={(e) => {
+                          e.preventDefault();
+                          handleLanguageSelect(lang);
+                        }}
+                      >
+                        {lang}
+                      </div>
+                    ))}
+                    {filteredLanguages.length === 0 && (
+                      <div className="dropdown-empty">No languages found</div>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* Telegram Link */}
+              <div className="form-group">
+                <label className="form-label">Telegram Link </label>
+                <input
+                  type="url"
+                  name="link"
+                  value={formData.link}
+                  onChange={(e) => setFormData(prev => ({ ...prev, link: e.target.value }))}
+                  className="form-input"
+                  placeholder="https://t.me/+username or https://t.me/username or username"
+                  required
+                />
+                {formData.link && !telegramLinkPattern.test(formData.link) && (
+                  <p className="form-error">Invalid link format! Must be: https://t.me/username or username</p>
+                )}
+              </div>
+
+              {/* Description */}
+              <div className="form-group">
+                <label className="form-label-optional">
+                  Description ({250 - formData.description.length} characters remaining)
+                </label>
+                <textarea
+                  name="description"
+                  value={formData.description}
+                  onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+                  className="form-input textarea"
+                  placeholder="Group/channel description..."
+                  maxLength={250}
+                />
+              </div>
+
+              {/* Tags */}
+              <div className="form-group">
+                <label className="form-label">Tags * (Max 20 tags, 30 characters each)</label>
+                <div className="tag-input-container">
+                  <div className="tag-container">
+                    {tags.map((tag, index) => (
+                      <div key={index} className="tag-item">
+                        {tag}
+                        <span className="tag-remove" onClick={() => removeTag(index)}>×</span>
+                      </div>
+                    ))}
+                  </div>
+                  {tags.length < 20 && (
+                    <input
+                      type="text"
+                      value={tagInput}
+                      onChange={handleTags}
+                      className="tag-input"
+                      placeholder="Type tags separated by comma..."
+                    />
+                  )}
+                </div>
+              </div>
+
+              {/* Guidelines */}
+              <div className="submission-guidelines">
+                <h3>Submission Guidelines</h3>
+                <ul>
+                  <li>Groups must follow community guidelines</li>
+                  <li>No spam or promotional content</li>
+                  <li>Admin reserves right to remove listings</li>
+                </ul>
+              </div>
+
+              {/* Submit Button */}
+              <button 
+                type="submit" 
+                className="submit-button" 
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? (
+                  <div className="spinner-container">
+                    <svg className="spinner" viewBox="0 0 24 24">
+                      <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                    </svg>
+                    Submitting...
+                  </div>
+                ) : 'Submit Group/Channel'}
+              </button>
+            </form>
+
+            {/* Guide Section */}
             <div className="guide-section">
               <div className="note-section">
                 <h3>📢 Note:</h3>
@@ -492,6 +568,7 @@ const AddTelegramGroup = () => {
 
               <div className="telegram-guide">
                 <h3>📘 Telegram Group Guide</h3>
+                
                 <div className="guide-subsection">
                   <h4>🔹 Telegram Group Types</h4>
                   <ol>
@@ -622,33 +699,33 @@ const AddTelegramGroup = () => {
                 </div>
               </div>
             </div>
-          </form>
-        </div>
-      </div>
 
-      {/* Existing Group Popup */}
-      {showExistingPopup && (
-        <div className="existing-group-popup">
-          <div className="popup-content">
-            <h3>Group/Channel Exists</h3>
-            <p>This Telegram group/channel is already listed in our directory.</p>
-            <div className="popup-buttons">
-              <button
-                className="popup-close"
-                onClick={() => setShowExistingPopup(false)}
-              >
-                Close
-              </button>
-              <button
-                className="popup-open"
-                onClick={() => window.open(existingGroup, '_blank')}
-              >
-                Open Group
-              </button>
-            </div>
+            {/* Existing Group Popup */}
+            {showExistingPopup && (
+              <div className="existing-group-popup">
+                <div className="popup-content">
+                  <h3>Group/Channel Exists</h3>
+                  <p>This Telegram group/channel is already listed in our directory.</p>
+                  <div className="popup-buttons">
+                    <button 
+                      className="popup-close"
+                      onClick={() => setShowExistingPopup(false)}
+                    >
+                      Close
+                    </button>
+                    <button 
+                      className="popup-open"
+                      onClick={() => window.open(existingGroup, '_blank')}
+                    >
+                      Open Group
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
-      )}
+      </div>
     </div>
   );
 };

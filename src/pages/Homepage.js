@@ -1,8 +1,8 @@
+// Homepage.js
 import React, { useEffect, useState, useRef } from 'react';
 import { db } from '../firebase';
 import { doc, getDoc, collection, query, getDocs, orderBy, limit, startAfter } from 'firebase/firestore';
 import { useNavigate } from 'react-router-dom';
-import logo from '../assets/logo.png';
 import '../css/Homepage.css';
 
 function Homepage() {
@@ -20,24 +20,11 @@ function Homepage() {
   const [isLoading, setIsLoading] = useState(false);
   const [lastVisible, setLastVisible] = useState(null);
   const [hasMore, setHasMore] = useState(true);
+  const [showAddGroupPopup, setShowAddGroupPopup] = useState(false);
 
-  // Dropdown states
-  const [filteredCategories, setFilteredCategories] = useState([]);
-  const [filteredCountries, setFilteredCountries] = useState([]);
-  const [filteredLanguages, setFilteredLanguages] = useState([]);
-  const [showCategories, setShowCategories] = useState(false);
-  const [showCountries, setShowCountries] = useState(false);
-  const [showLanguages, setShowLanguages] = useState(false);
-
-  // Input field values for dropdowns
-  const [categoryInputValue, setCategoryInputValue] = useState('');
-  const [countryInputValue, setCountryInputValue] = useState('');
-  const [languageInputValue, setLanguageInputValue] = useState('');
-
-  // Refs for dropdown containers
-  const categoryRef = useRef(null);
-  const countryRef = useRef(null);
-  const languageRef = useRef(null);
+  // Refs
+  const searchSectionRef = useRef(null);
+  const featuredSectionRef = useRef(null);
 
   const navigate = useNavigate();
 
@@ -55,6 +42,34 @@ function Homepage() {
     setSelectedCategory(params.get('category') || '');
     setSelectedCountry(params.get('country') || '');
     setSelectedLanguage(params.get('language') || '');
+    
+    // Initialize stats with animation
+    const animateStats = () => {
+      const statsElements = document.querySelectorAll('.stat-number');
+      statsElements.forEach(el => {
+        const target = parseInt(el.getAttribute('data-count'));
+        let count = 0;
+        const duration = 2000;
+        const increment = target / (duration / 16);
+        
+        const updateCount = () => {
+          count += increment;
+          if (count < target) {
+            el.textContent = Math.ceil(count);
+            requestAnimationFrame(updateCount);
+          } else {
+            el.textContent = target;
+          }
+        };
+        
+        requestAnimationFrame(updateCount);
+      });
+    };
+    
+    // Set stats after a delay to allow DOM to render
+    setTimeout(() => {
+      animateStats();
+    }, 500);
   }, []);
 
   // Fetch dropdown data
@@ -74,10 +89,6 @@ function Homepage() {
         setCategories(sortedCategories);
         setCountries(sortedCountries);
         setLanguages(sortedLanguages);
-        
-        setFilteredCategories(sortedCategories);
-        setFilteredCountries(sortedCountries);
-        setFilteredLanguages(sortedLanguages);
       } catch (error) {
         console.error('Error loading dropdowns:', error);
       }
@@ -95,156 +106,11 @@ function Homepage() {
     return () => window.removeEventListener('keydown', handleKeyPress);
   }, []);
 
-  // Click outside handler
-  useEffect(() => {
-    const handleClickOutside = (e) => {
-      if (categoryRef.current && !categoryRef.current.contains(e.target)) {
-        setShowCategories(false);
-        setCategoryInputValue(selectedCategory);
-        setFilteredCategories(categories);
-      }
-      if (countryRef.current && !countryRef.current.contains(e.target)) {
-        setShowCountries(false);
-        setCountryInputValue(selectedCountry);
-        setFilteredCountries(countries);
-      }
-      if (languageRef.current && !languageRef.current.contains(e.target)) {
-        setShowLanguages(false);
-        setLanguageInputValue(selectedLanguage);
-        setFilteredLanguages(languages);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [categories, countries, languages, selectedCategory, selectedCountry, selectedLanguage]);
-
-  // Handle dropdown filtering
-  const handleCategorySearch = (value) => {
-    setCategoryInputValue(value);
-    setFilteredCategories(
-      value ? categories.filter(c => 
-        c.toLowerCase().includes(value.toLowerCase())
-      ) : categories
-    );
-  };
-
-  const handleCountrySearch = (value) => {
-    setCountryInputValue(value);
-    setFilteredCountries(
-      value ? countries.filter(c => 
-        c.toLowerCase().includes(value.toLowerCase())
-      ) : countries
-    );
-  };
-
-  const handleLanguageSearch = (value) => {
-    setLanguageInputValue(value);
-    setFilteredLanguages(
-      value ? languages.filter(l => 
-        l.toLowerCase().includes(value.toLowerCase())
-      ) : languages
-    );
-  };
-
-  // Handle dropdown selection
-  const handleCategorySelect = (category) => {
-    setSelectedCategory(category);
-    setCategoryInputValue(category);
-    setFilteredCategories(categories);
-    setShowCategories(false);
-    updateUrlParams({ category });
-  };
-
-  const handleCountrySelect = (country) => {
-    setSelectedCountry(country);
-    setCountryInputValue(country);
-    setFilteredCountries(countries);
-    setShowCountries(false);
-    updateUrlParams({ country });
-  };
-
-  const handleLanguageSelect = (language) => {
-    setSelectedLanguage(language);
-    setLanguageInputValue(language);
-    setFilteredLanguages(languages);
-    setShowLanguages(false);
-    updateUrlParams({ language });
-  };
-
-  // Update URL parameters
-  const updateUrlParams = (params) => {
-    const url = new URL(window.location);
-    Object.entries(params).forEach(([key, value]) => {
-      if (value) {
-        url.searchParams.set(key, value);
-      } else {
-        url.searchParams.delete(key);
-      }
-    });
-    window.history.replaceState(null, '', url.toString());
-  };
-
-  // Sync input values with selected values
-  useEffect(() => {
-    setCategoryInputValue(selectedCategory);
-  }, [selectedCategory]);
-
-  useEffect(() => {
-    setCountryInputValue(selectedCountry);
-  }, [selectedCountry]);
-
-  useEffect(() => {
-    setLanguageInputValue(selectedLanguage);
-  }, [selectedLanguage]);
-
-  // Handle input focus - show dropdown and reset filter
-  const handleCategoryFocus = () => {
-    setShowCategories(true);
-    setFilteredCategories(categories);
-  };
-
-  const handleCountryFocus = () => {
-    setShowCountries(true);
-    setFilteredCategories(countries);
-  };
-
-  const handleLanguageFocus = () => {
-    setShowLanguages(true);
-    setFilteredLanguages(languages);
-  };
-
-  // Handle input click - ensure dropdown shows even if already focused
-  const handleCategoryClick = () => {
-    if (!showCategories) {
-      setShowCategories(true);
-      setFilteredCategories(categories);
-    }
-  };
-
-  const handleCountryClick = () => {
-    if (!showCountries) {
-      setShowCountries(true);
-      setFilteredCountries(countries);
-    }
-  };
-
-  const handleLanguageClick = () => {
-    if (!showLanguages) {
-      setShowLanguages(true);
-      setFilteredLanguages(languages);
-    }
-  };
-
-  // UPDATED: Use new collection names
+  // Load groups
   useEffect(() => {
     const loadGroups = async () => {
       setIsLoading(true);
       try {
-        // Updated collection names
         const collectionName = selectedPlatform === 'whatsapp' 
           ? 'ApprovedWA' 
           : 'ApprovedTG';
@@ -252,13 +118,12 @@ function Homepage() {
         let q = query(
           collection(db, collectionName),
           orderBy('createdAt', 'desc'),
-          limit(20)
+          limit(21)
         );
 
         const snapshot = await getDocs(q);
         let groupsData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
-        // Case-insensitive filtering
         if (selectedCategory) {
           groupsData = groupsData.filter(group => 
             group.category.toLowerCase() === selectedCategory.toLowerCase()
@@ -288,13 +153,11 @@ function Homepage() {
     loadGroups();
   }, [selectedPlatform, selectedCategory, selectedCountry, selectedLanguage]);
 
-  // UPDATED: Use new collection names
   const handleLoadMore = async () => {
     if (!lastVisible || isLoading) return;
 
     setIsLoading(true);
     try {
-      // Updated collection names
       const collectionName = selectedPlatform === 'whatsapp' 
         ? 'ApprovedWA' 
         : 'ApprovedTG';
@@ -309,7 +172,6 @@ function Homepage() {
       const snapshot = await getDocs(q);
       let newGroups = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
-      // Apply filters
       if (selectedCategory) {
         newGroups = newGroups.filter(group => 
           group.category.toLowerCase() === selectedCategory.toLowerCase()
@@ -342,19 +204,6 @@ function Homepage() {
     setSelectedCountry('');
     setSelectedLanguage('');
     setSearchQuery('');
-    setCategoryInputValue('');
-    setCountryInputValue('');
-    setLanguageInputValue('');
-    setFilteredCategories(categories);
-    setFilteredCountries(countries);
-    setFilteredLanguages(languages);
-    
-    // Clear URL parameters
-    const url = new URL(window.location);
-    url.searchParams.delete('category');
-    url.searchParams.delete('country');
-    url.searchParams.delete('language');
-    window.history.replaceState(null, '', url.toString());
   };
 
   // Handle filter link clicks
@@ -371,17 +220,37 @@ function Homepage() {
     window.open(launchUrl, '_blank', 'noopener,noreferrer');
   };
 
+  // Handle share button click
+  const handleShareGroup = (group) => {
+    const groupUrl = `${window.location.origin}/viewgroup/${selectedPlatform}/${group.id}`;
+    
+    if (navigator.share) {
+      navigator.share({
+        title: group.name,
+        text: group.description || 'Join this community on Multilinks.cloud',
+        url: groupUrl
+      })
+      .catch(console.error);
+    } else {
+      // Fallback for desktop browsers
+      navigator.clipboard.writeText(groupUrl);
+      alert('Link copied to clipboard!');
+    }
+  };
+
   // Handle add group buttons
   const handleAddWhatsAppGroup = () => {
     const currentOrigin = window.location.origin;
     const fullUrl = `${currentOrigin}/add-whatsapp-group`;
     window.open(fullUrl, '_blank', 'noopener,noreferrer');
+    setShowAddGroupPopup(false);
   };
 
   const handleAddTelegramGroup = () => {
     const currentOrigin = window.location.origin;
     const fullUrl = `${currentOrigin}/add-telegram-group`;
     window.open(fullUrl, '_blank', 'noopener,noreferrer');
+    setShowAddGroupPopup(false);
   };
 
   // Search filter
@@ -400,6 +269,11 @@ function Homepage() {
   // Helper functions
   const getGroupAvatar = (group) => group.iconUrl || group.avatar;
   const truncateText = (text, max) => text?.length > max ? `${text.slice(0, max)}...` : text;
+  
+  // Scroll to search section
+  const scrollToSearch = () => {
+    searchSectionRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
 
   return (
     <div className="homepage-container">
@@ -409,256 +283,285 @@ function Homepage() {
         </button>
       )}
 
-      <header className="main-header">
-        <div className="header-content">
-          <h1>Multilinks.cloud</h1>
-          <h2>Find your community</h2>
-        </div>
-      </header>
-
-      <div className="logo-section">
-        <img src={logo} alt="Logo" className="site-logo" />
-      </div>
-
-      <div className="action-buttons">
-        <button 
-          className="btn whatsapp-btn"
-          onClick={handleAddWhatsAppGroup}
-        >
-          Add WhatsApp Group
-        </button>
-        <button 
-          className="btn telegram-btn"
-          onClick={handleAddTelegramGroup}
-        >
-          Add Telegram Group
-        </button>
-      </div>
-
-      <div className="search-section">
-        <input
-          type="text"
-          placeholder="Search groups..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="search-input"
-        />
-      </div>
-
-      <div className="filter-section">
-        {/* Category Dropdown */}
-        <div className="filter-group dropdown-container" ref={categoryRef}>
-          <label>Category:</label>
-          <div className="input-wrapper">
-            <input
-              type="text"
-              value={categoryInputValue}
-              onChange={(e) => handleCategorySearch(e.target.value)}
-              onFocus={handleCategoryFocus}
-              onClick={handleCategoryClick}
-              placeholder="Search categories..."
-              className="filter-input"
-            />
-            <span className="dropdown-arrow" />
-          </div>
-          {showCategories && (
-            <div className="dropdown-list">
-              {filteredCategories.map(category => (
-                <div
-                  key={category}
-                  className="dropdown-item"
-                  onMouseDown={(e) => {
-                    e.preventDefault();
-                    handleCategorySelect(category);
-                  }}
-                >
-                  {category}
-                </div>
-              ))}
+      {/* Add Group Popup */}
+      {showAddGroupPopup && (
+        <div className="add-group-popup">
+          <div className="popup-content">
+            <div className="popup-header">
+              <h3>Add Your Group</h3>
+              <button className="close-popup" onClick={() => setShowAddGroupPopup(false)}>
+                &times;
+              </button>
             </div>
-          )}
-        </div>
-
-        {/* Country Dropdown */}
-        <div className="filter-group dropdown-container" ref={countryRef}>
-          <label>Country:</label>
-          <div className="input-wrapper">
-            <input
-              type="text"
-              value={countryInputValue}
-              onChange={(e) => handleCountrySearch(e.target.value)}
-              onFocus={handleCountryFocus}
-              onClick={handleCountryClick}
-              placeholder="Search countries..."
-              className="filter-input"
-            />
-            <span className="dropdown-arrow" />
-          </div>
-          {showCountries && (
-            <div className="dropdown-list">
-              {filteredCountries.map(country => (
-                <div
-                  key={country}
-                  className="dropdown-item"
-                  onMouseDown={(e) => {
-                    e.preventDefault();
-                    handleCountrySelect(country);
-                  }}
-                >
-                  {country}
+            <div className="popup-options">
+              <button className="popup-option whatsapp" onClick={handleAddWhatsAppGroup}>
+                <div className="option-icon">
+                  <img src="/whatsapp.png" alt="WhatsApp" />
                 </div>
-              ))}
+                <span>Add WhatsApp Group</span>
+              </button>
+              <button className="popup-option telegram" onClick={handleAddTelegramGroup}>
+                <div className="option-icon">
+                  <img src="/telegram.png" alt="Telegram" />
+                </div>
+                <span>Add Telegram Group</span>
+              </button>
             </div>
-          )}
+          </div>
+        </div>
+      )}
+
+      {/* Navigation Bar */}
+      <nav className="navbar">
+        <div className="nav-container">
+          <a href="/" className="logo-nav">
+            <div className="logo-icon">
+              <img src="/logo512.png" alt="Multilinks Logo" />
+            </div>
+            Multilinks
+          </a>
+          <div className="nav-actions">
+            <button className="nav-btn nav-btn-outline" onClick={scrollToSearch}>
+              Browse
+            </button>
+            <button 
+              className="nav-btn nav-btn-primary" 
+              onClick={() => setShowAddGroupPopup(true)}
+            >
+              Add Group
+            </button>
+          </div>
+        </div>
+      </nav>
+
+      {/* Hero Section */}
+      <section className="hero">
+        <div className="floating-element">
+          <svg width="60" height="60" fill="currentColor" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="3"/>
+          </svg>
+        </div>
+        <div className="floating-element">
+          <svg width="40" height="40" fill="currentColor" viewBox="0 0 24 24">
+            <rect x="3" y="3" width="18" height="18" rx="2"/>
+          </svg>
+        </div>
+        <div className="floating-element">
+          <svg width="50" height="50" fill="currentColor" viewBox="0 0 24 24">
+            <polygon points="12 2 22 8.5 22 15.5 12 22 2 15.5 2 8.5 12 2"/>
+          </svg>
         </div>
 
-        {/* Language Dropdown */}
-        <div className="filter-group dropdown-container" ref={languageRef}>
-          <label>Language:</label>
-          <div className="input-wrapper">
-            <input
-              type="text"
-              value={languageInputValue}
-              onChange={(e) => handleLanguageSearch(e.target.value)}
-              onFocus={handleLanguageFocus}
-              onClick={handleLanguageClick}
-              placeholder="Search languages..."
-              className="filter-input"
-            />
-            <span className="dropdown-arrow" />
+        <div className="hero-content">
+          <div className="hero-badge">
+            <span>🚀</span>
+            Join 500K+ members worldwide
           </div>
-          {showLanguages && (
-            <div className="dropdown-list">
-              {filteredLanguages.map(language => (
-                <div
-                  key={language}
-                  className="dropdown-item"
-                  onMouseDown={(e) => {
-                    e.preventDefault();
-                    handleLanguageSelect(language);
-                  }}
-                >
-                  {language}
-                </div>
-              ))}
+          
+          <h1 className="hero-title">Find Your Perfect Community</h1>
+          <p className="hero-subtitle">
+            Discover and connect with thousands of active WhatsApp and Telegram groups across every topic imaginable
+          </p>
+          
+          <div className="hero-actions">
+            <button className="btn btn-primary" onClick={scrollToSearch}>
+              <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
+                <circle cx="11" cy="11" r="8"/>
+                <path d="m21 21-4.35-4.35"/>
+              </svg>
+              Explore Groups
+            </button>
+          </div>
+
+          {/* Search Section */}
+          <div className="search-section" ref={searchSectionRef}>
+            <div className="search-container">
+              <svg className="search-icon" fill="currentColor" viewBox="0 0 24 24">
+                <circle cx="11" cy="11" r="8"/>
+                <path d="m21 21-4.35-4.35"/>
+              </svg>
+              <input 
+                type="text" 
+                className="search-input" 
+                placeholder="Search for communities, topics, or interests..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
             </div>
-          )}
+            
+            <div className="filters">
+              <select 
+                className="filter-select"
+                value={selectedCategory}
+                onChange={(e) => setSelectedCategory(e.target.value)}
+              >
+                <option value="">📂 All Categories</option>
+                {categories.map(cat => (
+                  <option key={cat} value={cat}>{cat}</option>
+                ))}
+              </select>
+              
+              <select 
+                className="filter-select"
+                value={selectedCountry}
+                onChange={(e) => setSelectedCountry(e.target.value)}
+              >
+                <option value="">🌍 All Regions</option>
+                {countries.map(country => (
+                  <option key={country} value={country}>{country}</option>
+                ))}
+              </select>
+              
+              <select 
+                className="filter-select"
+                value={selectedLanguage}
+                onChange={(e) => setSelectedLanguage(e.target.value)}
+              >
+                <option value="">🗣️ All Languages</option>
+                {languages.map(lang => (
+                  <option key={lang} value={lang}>{lang}</option>
+                ))}
+              </select>
+              
+              <div className="platform-select">
+                <div 
+                  className={`platform-option ${selectedPlatform === 'whatsapp' ? 'active' : ''}`}
+                  onClick={() => setSelectedPlatform('whatsapp')}
+                >
+                  <img src="/whatsapp.png" alt="WhatsApp" className="platform-icon" />
+                  WhatsApp
+                </div>
+                <div 
+                  className={`platform-option ${selectedPlatform === 'telegram' ? 'active' : ''}`}
+                  onClick={() => setSelectedPlatform('telegram')}
+                >
+                  <img src="/telegram.png" alt="Telegram" className="platform-icon" />
+                  Telegram
+                </div>
+              </div>
+              
+              <button 
+                className="clear-filters-btn"
+                onClick={clearFilters}
+              >
+                Clear Filters
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Stats */}
+      <div className="stats">
+        <div className="stat-item">
+          <span className="stat-number" data-count="352">0</span>
+          <span className="stat-label">Active Groups</span>
+        </div>
+        <div className="stat-item">
+          <span className="stat-number" data-count="758">0</span>
+          <span className="stat-label">Community Members</span>
+        </div>
+        <div className="stat-item">
+          <span className="stat-number" data-count="170">0</span>
+          <span className="stat-label">Countries</span>
+        </div>
+        <div className="stat-item">
+          <span className="stat-number" data-count="24">0</span>
+          <span className="stat-label">Categories</span>
+        </div>
+      </div>
+
+      {/* Featured Groups */}
+      <section className="featured-section" ref={featuredSectionRef}>
+        <div className="section-header">
+          <h2 className="section-title">Featured Communities</h2>
+          <p className="section-subtitle">Join these trending groups and connect with like-minded people</p>
         </div>
         
-        <button 
-          className="clear-filters-btn"
-          onClick={clearFilters}
-        >
-          Clear Filters
-        </button>
-      </div>
-
-      <div className="platform-toggle">
-        <button
-          className={`toggle-btn whatsapp ${selectedPlatform === 'whatsapp' ? 'active' : ''}`}
-          onClick={() => {
-            const url = new URL(window.location);
-            url.searchParams.set('platform', 'whatsapp');
-            window.history.replaceState(null, '', url.toString());
-            setSelectedPlatform('whatsapp');
-          }}
-        >
-          WhatsApp
-        </button>
-        <button
-          className={`toggle-btn telegram ${selectedPlatform === 'telegram' ? 'active' : ''}`}
-          onClick={() => {
-            const url = new URL(window.location);
-            url.searchParams.set('platform', 'telegram');
-            window.history.replaceState(null, '', url.toString());
-            setSelectedPlatform('telegram');
-          }}
-        >
-          Telegram
-        </button>
-      </div>
-
-      <div className="groups-container">
-        {filteredGroups.length === 0 && !isLoading ? (
-          <div className="no-groups">No groups found matching your criteria</div>
-        ) : (
-          <div className="group-list">
-            {filteredGroups.map(group => (
-              <div key={group.id} className="group-card">
-                <div className="card-content">
+        <div className="groups-grid">
+          {filteredGroups.length === 0 && !isLoading ? (
+            <div className="no-groups">No groups found matching your criteria</div>
+          ) : (
+            filteredGroups.map((group, index) => (
+              <div 
+                key={group.id} 
+                className={`group-card loading stagger-${(index % 5) + 1}`}
+              >
+                <div className="group-header">
                   <div className="group-avatar">
                     {getGroupAvatar(group) ? (
                       <img src={getGroupAvatar(group)} alt={group.name} />
                     ) : (
-                      <div className={`default-avatar ${selectedPlatform}`}>
-                        {selectedPlatform === 'whatsapp' ? 'WA' : 'TG'}
-                      </div>
+                      <img 
+                        src={selectedPlatform === 'whatsapp' ? "/whatsapp.png" : "/telegram.png"} 
+                        alt={selectedPlatform} 
+                        className="platform-logo"
+                      />
                     )}
                   </div>
-                  
-                  <div className="group-details">
-                    <div className="group-header">
-                      <span className={`platform-indicator ${selectedPlatform}`}>
-                        {selectedPlatform === 'whatsapp' ? 'WhatsApp' : 'Telegram'}
-                      </span>
-                      <h3 className="group-name">{group.name}</h3>
-                    </div>
-
-                    {group.description && (
-                      <p className="group-description">
-                        {truncateText(group.description, 95)}
-                      </p>
-                    )}
-
-                    <div className="group-meta">
-                      <span className="meta-inline">
-                        🏷️ 
-                        <button
-                          className="filter-link"
-                          onClick={() => handleFilterClick('category', group.category)}
-                        >
-                          {group.category}
-                        </button>
-                        {' '} 🌍 
-                        <button
-                          className="filter-link"
-                          onClick={() => handleFilterClick('country', group.country)}
-                        >
-                          {group.country}
-                        </button>
-                        {' '} 🗣️ 
-                        <button
-                          className="filter-link"
-                          onClick={() => handleFilterClick('language', group.language)}
-                        >
-                          {group.language}
-                        </button>
-                      </span>
-                    </div>
-
-                    {group.tags?.length > 0 && (
-                      <div className="group-tags">
-                        {group.tags.map(tag => (
-                          <span key={tag} className="tag">{tag}</span>
-                        ))}
-                      </div>
-                    )}
-
-                    <div className="group-actions">
-                      <button
-                        onClick={() => handleJoinGroup(group)}
-                        className={`join-button ${selectedPlatform}`}
-                      >
-                        Join {selectedPlatform === 'whatsapp' ? 'WhatsApp Group' : 'Telegram Group'}
-                      </button>
+                  <div className="group-info">
+                    <h3>{group.name}</h3>
+                    <div className="group-members">
+                      {group.members || '1,000+'} members
                     </div>
                   </div>
                 </div>
+                <p className="group-description">
+                  {truncateText(group.description, 120)}
+                </p>
+                <div className="group-meta">
+                  <span className="meta-inline">
+                    <button
+                      className="filter-link"
+                      onClick={() => handleFilterClick('category', group.category)}
+                    >
+                      🏷️ {group.category}
+                    </button>
+                    <button
+                      className="filter-link"
+                      onClick={() => handleFilterClick('country', group.country)}
+                    >
+                      🌍 {group.country}
+                    </button>
+                    <button
+                      className="filter-link"
+                      onClick={() => handleFilterClick('language', group.language)}
+                    >
+                      🗣️ {group.language}
+                    </button>
+                  </span>
+                </div>
+                <div className="group-tags">
+                  {group.tags?.slice(0, 3).map(tag => (
+                    <span key={tag} className="tag">{tag}</span>
+                  ))}
+                </div>
+                <div className="group-actions">
+                  <button 
+                    className="btn-join"
+                    onClick={() => handleJoinGroup(group)}
+                  >
+                    Join Group
+                  </button>
+                  <button 
+                    className="btn-share"
+                    onClick={() => handleShareGroup(group)}
+                  >
+                    <img 
+                     src="/share.ico" 
+                      alt="Share" 
+                      className="share-icon" 
+                      width="16" 
+                      height="16" 
+  />
+                    Share
+                  </button>
+                </div>
               </div>
-            ))}
-          </div>
-        )}
-
+            ))
+          )}
+        </div>
+        
         {hasMore && (
           <div className="load-more">
             <button 
@@ -670,7 +573,7 @@ function Homepage() {
             </button>
           </div>
         )}
-      </div>
+      </section>
     </div>
   );
 }

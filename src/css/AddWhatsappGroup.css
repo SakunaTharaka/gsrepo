@@ -1,61 +1,237 @@
 /* AddGroupForm.css - Unified Styles */
 /* Base Styles */
-.add-whatsapp-container,
-.add-telegram-container {
+.add-whatsapp-container {
   min-height: 100vh;
   background-color: #f8fafc;
-  padding: 140px 1rem 2rem;
+  padding: 1rem;
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
-/* Fixed Header */
-.main-header {
+.homepage-container .add-whatsapp-container {
+  padding-top: 100px;
+}
+
+/* Navigation */
+.navbar {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid #e2e8f0;
   z-index: 1000;
-  text-align: center;
-  padding: 20px 0;
-  background: #2c3e50;
-  color: white;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  padding: 0.75rem 0;
+  transition: all 0.3s ease;
 }
 
-.header-content {
+.nav-container {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 0 20px;
+  padding: 0 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
-.main-header h1 {
-  font-size: 2rem;
-  margin: 0;
-  transition: opacity 0.3s ease;
+.logo-nav {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #1e293b;
+  text-decoration: none;
 }
 
-.main-header h1:hover {
-  opacity: 0.8;
+.logo-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
 }
 
-.main-header h2 {
-  font-size: 1.2rem;
-  margin: 5px 0 0;
-  font-weight: normal;
+.logo-icon img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
 }
 
-.logo-section {
-  text-align: center;
-  margin: 40px 0 20px;
+.nav-actions {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
 }
 
-.site-logo {
-  max-width: 200px;
-  height: auto;
+.nav-btn {
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  border: none;
+  cursor: pointer;
+  font-size: 0.875rem;
+}
+
+.nav-btn-outline {
+  color: #64748b;
+  border: 1px solid #e2e8f0;
+  background: white;
+}
+
+.nav-btn-outline:hover {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+}
+
+.nav-btn-primary {
+  background: #3b82f6;
+  color: white;
+}
+
+.nav-btn-primary:hover {
+  background: #2563eb;
+  transform: translateY(-1px);
+}
+
+/* Admin Button */
+.admin-button {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 1001;
+  padding: 10px 20px;
+  background: #ff4757;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+  transition: all 0.2s ease;
+  font-weight: 600;
+}
+
+.admin-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+}
+
+/* Add Group Popup */
+.add-group-popup {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+}
+
+.popup-content {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15);
+  max-width: 500px;
+  width: 90%;
+  overflow: hidden;
+  animation: popupIn 0.3s ease-out;
+}
+
+.popup-header {
+  padding: 1.5rem;
+  background: #f8fafc;
+  border-bottom: 1px solid #e2e8f0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.popup-header h3 {
+  font-size: 1.5rem;
+  color: #0f172a;
+}
+
+.close-popup {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: #64748b;
+  transition: color 0.2s ease;
+}
+
+.close-popup:hover {
+  color: #0f172a;
+}
+
+.popup-options {
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.popup-option {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.5rem;
+  border-radius: 12px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: white;
+}
+
+.popup-option.whatsapp {
+  background: #25D366;
+  box-shadow: 0 4px 14px rgba(37, 211, 102, 0.25);
+}
+
+.popup-option.whatsapp:hover {
+  background: #128C7E;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(37, 211, 102, 0.35);
+}
+
+.popup-option.telegram {
+  background: #0088cc;
+  box-shadow: 0 4px 14px rgba(0, 136, 204, 0.25);
+}
+
+.popup-option.telegram:hover {
+  background: #006699;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 136, 204, 0.35);
+}
+
+.option-icon {
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.option-icon img {
+  width: 32px;
+  height: 32px;
 }
 
 /* Form Containers */
-.add-whatsapp-form-container,
-.add-telegram-form-container {
+.add-whatsapp-form-container {
   max-width: 42rem;
   margin: 0 auto;
   background: white;
@@ -243,7 +419,7 @@
     overflow: visible;
     text-overflow: clip;
     width: 100%;
-    text-align: center; /* Added this line */
+    text-align: center;
 }
 
 /* Guidelines and Rules */
@@ -454,7 +630,7 @@
 /* Responsive Adjustments */
 @media (max-width: 768px) {
   .add-whatsapp-container {
-    padding: 120px 1rem 1rem;
+    padding: 1rem;
   }
   
   .form-content {
@@ -473,5 +649,56 @@
   .popup-close,
   .popup-open {
     width: 100%;
+  }
+  
+  .navbar {
+    padding: 0.5rem 0;
+  }
+  
+  .nav-container {
+    padding: 0 1rem;
+  }
+  
+  .logo-nav {
+    font-size: 1rem;
+  }
+  
+  .nav-btn {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.8rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .form-content {
+    padding: 1rem;
+  }
+  
+  .form-header {
+    font-size: 1.3rem;
+  }
+  
+  .submit-button {
+    font-size: 1rem;
+  }
+  
+  .guide-section {
+    padding: 1rem;
+  }
+  
+  .guide-subsection h4 {
+    font-size: 1.05rem;
+  }
+}
+
+/* Animations */
+@keyframes popupIn {
+  from { 
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to { 
+    opacity: 1;
+    transform: scale(1);
   }
 }
