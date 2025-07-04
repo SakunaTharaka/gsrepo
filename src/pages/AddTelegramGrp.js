@@ -212,7 +212,9 @@ const AddTelegramGroup = () => {
       // Validate required fields
       const requiredFields = ['name', 'category', 'country', 'language', 'link'];
       const allRequiredFilled = requiredFields.every(field => formData[field].trim());
-      if (!allRequiredFilled || tags.length === 0) {
+      
+      // Removed tags.length check to make tags optional
+      if (!allRequiredFilled) {
         alert('Please fill all required fields');
         return;
       }
@@ -497,9 +499,9 @@ const AddTelegramGroup = () => {
                 />
               </div>
 
-              {/* Tags */}
+              {/* Tags - Updated to show as optional */}
               <div className="form-group">
-                <label className="form-label">Tags * (Max 20 tags, 30 characters each)</label>
+                <label className="form-label">Tags (Optional, Max 20 tags, 30 characters each)</label>
                 <div className="tag-input-container">
                   <div className="tag-container">
                     {tags.map((tag, index) => (
