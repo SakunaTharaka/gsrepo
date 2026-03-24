@@ -1,324 +1,794 @@
-/* ViewGroup.css */
+/* =====================================================
+   ViewGroup.css — Multilinks Professional Redesign
+   ===================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+/* ---- Root tokens (match Homepage) ---- */
+:root {
+  --brand-primary: #4f46e5;
+  --brand-secondary: #7c3aed;
+  --wa-green: #25D366;
+  --tg-blue: #0088cc;
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #94a3b8;
+  --surface: #ffffff;
+  --surface-alt: #f8fafc;
+  --border: #e2e8f0;
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, .06);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, .08);
+  --shadow-lg: 0 16px 48px rgba(0, 0, 0, .12);
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --radius-full: 9999px;
+}
+
+/* ---- Page wrapper ---- */
+.homepage-container {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: var(--surface-alt);
+  color: var(--text-primary);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* extra top padding so fixed navbar doesn't overlap */
+.homepage-container .view-group-container {
+  padding-top: 88px;
+}
+
+/* =====================================================
+   VIEW GROUP CONTAINER
+   ===================================================== */
 .view-group-container {
-  max-width: 800px;
-  margin: 2rem auto;
-  padding: 2rem;
-  background: #fff;
-  border-radius: 12px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 88px 1.5rem 4rem;
 }
 
-.group-header {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  margin-bottom: 2rem;
-  justify-content: center;
-  flex-wrap: wrap;
-}
-
-.platform-tag {
-  padding: 0.25rem 0.75rem;
-  border-radius: 20px;
-  font-size: 0.9rem;
-  font-weight: 500;
-}
-
-.platform-tag.whatsapp {
-  background: #25D366;
-  color: white;
-}
-
-.platform-tag.telegram {
-  background: #0088cc;
-  color: white;
-}
-
-.group-meta {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 1rem;
-  margin-bottom: 2rem;
-}
-
-.meta-item {
-  background: #f5f5f5;
-  padding: 1rem;
-  border-radius: 8px;
-}
-
-.meta-label {
-  display: block;
-  font-weight: 600;
-  color: #666;
-  margin-bottom: 0.5rem;
-}
-
-.group-description h3,
-.group-tags h3 {
-  margin-bottom: 1rem;
-  color: #333;
-}
-
-.group-tags {
-  margin: 2rem 0;
-}
-
-.tag {
-  display: inline-block;
-  background: #e0e0e0;
-  padding: 0.25rem 0.75rem;
-  border-radius: 20px;
-  margin: 0.25rem;
-  font-size: 0.9rem;
-}
-
-.direct-link {
-  display: block;
-  width: fit-content;
-  margin: 2rem auto;
-  padding: 1rem 2rem;
-  border-radius: 8px;
-  text-decoration: none;
-  color: white;
-  font-weight: 600;
-  transition: transform 0.2s ease;
-}
-
-.direct-link.whatsapp {
-  background: #25D366;
-}
-
-.direct-link.telegram {
-  background: #0088cc;
-}
-
-.direct-link:hover {
-  transform: translateY(-2px);
-}
-
-.back-button {
-  background: none;
-  border: none;
-  color: #666;
-  cursor: pointer;
-  padding: 0.5rem 1rem;
-  transition: color 0.2s ease;
-  display: block;
-  margin: 2rem auto 0;
-}
-
-.back-button:hover {
-  color: #333;
-}
-
-.loading-container,
-.error-container {
-  text-align: center;
-  padding: 4rem;
-  font-size: 1.2rem;
-}
-
-/* Group Icon Styles */
+/* =====================================================
+   GROUP HERO CARD
+   ===================================================== */
 .group-icon-container {
   text-align: center;
-  margin: 2rem 0;
+  margin-bottom: 1.5rem;
 }
 
 .group-icon {
-  width: 120px;
-  height: 120px;
-  border-radius: 50%;
+  width: 96px;
+  height: 96px;
+  border-radius: 20px;
   object-fit: cover;
   border: 3px solid #fff;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  box-shadow: var(--shadow-md);
 }
 
 .default-group-icon {
-  width: 120px;
-  height: 120px;
-  border-radius: 50%;
+  width: 96px;
+  height: 96px;
+  border-radius: 20px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.5rem;
-  font-weight: bold;
-  background: #f0f0f0;
+  font-size: 1.4rem;
+  font-weight: 800;
   border: 3px solid #fff;
   position: relative;
+  box-shadow: var(--shadow-md);
 }
 
 .default-group-icon.whatsapp {
-  background: #25D366;
-  color: white;
+  background: linear-gradient(135deg, #25D366, #128C7E);
+  color: #fff;
 }
 
 .default-group-icon.telegram {
-  background: #0088cc;
-  color: white;
+  background: linear-gradient(135deg, #0088cc, #006699);
+  color: #fff;
 }
 
 .verified-star {
   position: absolute;
-  bottom: 5px;
-  right: 5px;
-  color: gold;
-  background: rgba(0,0,0,0.3);
+  bottom: -4px;
+  right: -4px;
+  color: #f59e0b;
+  background: #fff;
   border-radius: 50%;
   padding: 3px;
+  font-size: .85rem;
 }
 
-/* Terms & Conditions */
-.terms-conditions {
-  margin: 2rem auto;
-  max-width: 600px;
-  padding: 1rem;
-  background: #f8f9fa;
-  border-radius: 8px;
-  font-size: 0.9rem;
-}
-
-.terms-conditions h4 {
-  margin-bottom: 1rem;
-  color: #333;
-}
-
-.terms-conditions ul {
-  list-style-type: disc;
-  padding-left: 1.5rem;
-  color: #666;
-  line-height: 1.6;
-}
-
-.terms-conditions li {
-  margin-bottom: 0.5rem;
-}
-
-.action-section {
+/* =====================================================
+   GROUP HEADER INFO
+   ===================================================== */
+.group-header {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 1.5rem;
+  gap: .6rem;
+  margin-bottom: 1.5rem;
 }
 
-/* Report Section */
+.group-name {
+  font-size: 1.65rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  text-align: center;
+  letter-spacing: -.02em;
+  line-height: 1.2;
+}
+
+/* Platform badge */
+.platform-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: .35rem;
+  padding: .35rem 1rem;
+  border-radius: var(--radius-full);
+  font-size: .8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}
+
+.platform-tag.whatsapp {
+  background: rgba(37, 211, 102, .12);
+  color: #166534;
+  border: 1px solid rgba(37, 211, 102, .25);
+}
+
+.platform-tag.telegram {
+  background: rgba(0, 136, 204, .12);
+  color: #1e40af;
+  border: 1px solid rgba(0, 136, 204, .25);
+}
+
+/* =====================================================
+   REPORT BUTTON
+   ===================================================== */
 .report-button {
-  background: #ff4757;
-  color: white;
-  border: none;
-  padding: 0.5rem 1rem;
-  border-radius: 8px;
-  cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  margin: 1rem auto;
-  transition: all 0.2s ease;
+  gap: .45rem;
+  background: transparent;
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+  padding: .45rem 1rem;
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  margin: 0 auto 1.25rem;
+  transition: all .2s ease;
+  font-size: .8rem;
+  font-weight: 600;
+  font-family: inherit;
 }
 
 .report-button:hover {
-  background: #e8414d;
+  background: #fff1f2;
+  border-color: #fca5a5;
+  color: #dc2626;
 }
 
 .report-section {
-  background: #fff;
-  border-radius: 8px;
-  padding: 1rem;
-  margin: 1rem 0;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 1.25rem;
+  margin: 0 0 1.25rem;
+  box-shadow: var(--shadow-sm);
 }
 
 .report-textarea {
   width: 100%;
-  min-height: 100px;
-  padding: 0.5rem;
-  border: 1px solid #ddd;
-  border-radius: 4px;
+  min-height: 90px;
+  padding: .75rem;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-md);
   resize: vertical;
+  font-family: inherit;
+  font-size: .9rem;
+  color: var(--text-primary);
+  transition: border-color .2s;
+}
+
+.report-textarea:focus {
+  outline: none;
+  border-color: var(--brand-primary);
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, .12);
 }
 
 .report-controls {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-top: 0.5rem;
+  margin-top: .75rem;
+  gap: .75rem;
 }
 
 .char-count {
-  font-size: 0.8rem;
-  color: #666;
+  font-size: .8rem;
+  color: var(--text-muted);
 }
 
 .submit-report {
-  background: #3b82f6;
-  color: white;
+  background: var(--brand-primary);
+  color: #fff;
   border: none;
-  padding: 0.5rem 1rem;
-  border-radius: 4px;
+  padding: .55rem 1.25rem;
+  border-radius: var(--radius-md);
   cursor: pointer;
+  font-weight: 700;
+  font-size: .85rem;
+  font-family: inherit;
+  transition: all .2s;
+}
+
+.submit-report:hover {
+  background: #4338ca;
 }
 
 .submit-report:disabled {
-  background: #94a3b8;
+  background: var(--text-muted);
   cursor: not-allowed;
 }
 
 .report-status {
   text-align: center;
-  padding: 0.5rem;
-  margin: 0.5rem 0;
-  border-radius: 4px;
-  background: #e0f2fe;
-  color: #0c4a6e;
+  padding: .6rem 1rem;
+  margin: 0 0 1rem;
+  border-radius: var(--radius-md);
+  background: #f0fdf4;
+  color: #166534;
+  font-size: .875rem;
+  font-weight: 500;
+  border: 1px solid #bbf7d0;
 }
 
-/* Error Container */
-.error-container {
-  padding: 2rem;
-  background: #fff;
-  border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+/* =====================================================
+   META GRID
+   ===================================================== */
+.group-meta {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: .75rem;
+  margin-bottom: 1.5rem;
 }
 
-.error-icon {
-  font-size: 3rem;
-  color: #ff4757;
-  margin-bottom: 1rem;
+.meta-item {
+  background: var(--surface);
+  padding: .9rem 1rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  text-align: center;
 }
 
-.error-details {
-  margin-top: 1rem;
-  padding-top: 1rem;
-  border-top: 1px solid #eee;
+.meta-label {
+  display: block;
+  font-weight: 700;
+  font-size: .7rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  margin-bottom: .35rem;
 }
 
-/* Loading Spinner */
+.meta-item>*:not(.meta-label) {
+  font-size: .9rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+/* =====================================================
+   DESCRIPTION / TAGS
+   ===================================================== */
+.group-description {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 1.25rem 1.5rem;
+  margin-bottom: 1.25rem;
+}
+
+.group-description h3 {
+  font-size: .8rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  margin-bottom: .75rem;
+}
+
+.group-description p {
+  color: var(--text-secondary);
+  font-size: .95rem;
+  line-height: 1.65;
+}
+
+.group-tags {
+  margin-bottom: 1.5rem;
+}
+
+.group-tags h3 {
+  font-size: .8rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  margin-bottom: .75rem;
+}
+
+.tags-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem;
+}
+
+.tag {
+  background: #f0f4ff;
+  color: var(--brand-primary);
+  padding: .25rem .75rem;
+  border-radius: var(--radius-full);
+  font-size: .8rem;
+  font-weight: 600;
+  border: 1px solid #c7d2fe;
+}
+
+/* =====================================================
+   ACTION SECTION
+   ===================================================== */
+.action-section {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 1.25rem;
+  margin-bottom: 1.5rem;
+}
+
+.direct-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: .6rem;
+  padding: 1.1rem 2rem;
+  border-radius: var(--radius-lg);
+  text-decoration: none;
+  color: #fff;
+  font-weight: 800;
+  font-size: 1.1rem;
+  transition: all .25s ease;
+  letter-spacing: -.01em;
+}
+
+.direct-link.whatsapp {
+  background: linear-gradient(135deg, #25D366, #128C7E);
+  box-shadow: 0 6px 20px rgba(37, 211, 102, .3);
+}
+
+.direct-link.telegram {
+  background: linear-gradient(135deg, #0088cc, #006699);
+  box-shadow: 0 6px 20px rgba(0, 136, 204, .3);
+}
+
+.direct-link:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 32px rgba(37, 211, 102, .4);
+}
+
+.direct-link.telegram:hover {
+  box-shadow: 0 10px 32px rgba(0, 136, 204, .4);
+}
+
+/* Terms */
+.terms-conditions {
+  background: var(--surface-alt);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 1.25rem 1.5rem;
+  font-size: .875rem;
+}
+
+.terms-conditions h4 {
+  font-size: .8rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  margin-bottom: .75rem;
+}
+
+.terms-conditions ul {
+  list-style: none;
+  padding: 0;
+  color: var(--text-secondary);
+  line-height: 1.65;
+}
+
+.terms-conditions li {
+  padding: .2rem 0 .2rem 1.25rem;
+  position: relative;
+  font-size: .85rem;
+}
+
+.terms-conditions li::before {
+  content: '✓';
+  position: absolute;
+  left: 0;
+  color: #10b981;
+  font-weight: 700;
+  font-size: .8rem;
+}
+
+/* =====================================================
+   BACK BUTTON
+   ===================================================== */
+.back-button {
+  display: flex;
+  align-items: center;
+  gap: .4rem;
+  background: transparent;
+  border: 1.5px solid var(--border);
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: .6rem 1.25rem;
+  border-radius: var(--radius-full);
+  transition: all .2s ease;
+  margin: 0 auto;
+  font-size: .875rem;
+  font-weight: 600;
+  font-family: inherit;
+}
+
+.back-button:hover {
+  background: var(--surface);
+  color: var(--text-primary);
+  border-color: #94a3b8;
+}
+
+/* =====================================================
+   LOADING / ERROR / NOT FOUND STATES
+   ===================================================== */
 .loading-container {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: 300px;
+  min-height: 60vh;
+  gap: 1rem;
+  color: var(--text-muted);
+  font-size: .95rem;
 }
 
 .spinner {
-  width: 50px;
-  height: 50px;
-  border: 5px solid rgba(59, 130, 246, 0.3);
+  width: 44px;
+  height: 44px;
+  border: 4px solid rgba(79, 70, 229, .15);
   border-radius: 50%;
-  border-top-color: #3b82f6;
+  border-top-color: var(--brand-primary);
   animation: spin 1s ease-in-out infinite;
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
-/* Not Found Container */
+.error-container,
 .not-found-container {
+  max-width: 500px;
+  margin: 5rem auto;
   text-align: center;
-  padding: 2rem;
-  background: #fff;
+  padding: 3rem 2rem;
+  background: var(--surface);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--border);
+}
+
+.error-icon {
+  font-size: 3rem;
+  color: #ef4444;
+  margin-bottom: 1rem;
+}
+
+.error-container h2,
+.not-found-container h2 {
+  font-size: 1.4rem;
+  font-weight: 800;
+  margin-bottom: .75rem;
+  color: var(--text-primary);
+}
+
+.error-container p,
+.not-found-container p {
+  color: var(--text-secondary);
+  margin-bottom: 1.5rem;
+  font-size: .95rem;
+}
+
+.error-details {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border);
+  font-size: .85rem;
+  color: var(--text-muted);
+  text-align: left;
+  background: var(--surface-alt);
+  padding: .75rem 1rem;
+  border-radius: var(--radius-md);
+}
+
+/* =====================================================
+   ADMIN BUTTON
+   ===================================================== */
+.admin-button {
+  position: fixed;
+  top: 72px;
+  right: 20px;
+  z-index: 1001;
+  padding: 8px 16px;
+  background: #ef4444;
+  color: #fff;
+  border: none;
   border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  cursor: pointer;
+  font-weight: 700;
+  font-size: .8rem;
+  font-family: inherit;
+  transition: all .2s;
+}
+
+.admin-button:hover {
+  background: #dc2626;
+  transform: translateY(-1px);
+}
+
+/* Add Group popup (shared) */
+.add-group-popup {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, .55);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  padding: 1rem;
+}
+
+.popup-content {
+  background: var(--surface);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-lg);
+  max-width: 440px;
+  width: 100%;
+  overflow: hidden;
+  animation: popupIn .25s ease-out;
+}
+
+.popup-header {
+  padding: 1.5rem 1.75rem;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--surface-alt);
+}
+
+.popup-header h3 {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: var(--text-primary);
+}
+
+.close-popup {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: var(--text-muted);
+  transition: color .2s;
+  line-height: 1;
+}
+
+.close-popup:hover {
+  color: var(--text-primary);
+}
+
+.popup-options {
+  padding: 1.5rem 1.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.popup-option {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.1rem 1.3rem;
+  border-radius: var(--radius-lg);
+  border: none;
+  cursor: pointer;
+  transition: all .25s;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #fff;
+  font-family: inherit;
+}
+
+.popup-option.whatsapp {
+  background: linear-gradient(135deg, #25D366, #128C7E);
+  box-shadow: 0 4px 14px rgba(37, 211, 102, .25);
+}
+
+.popup-option.whatsapp:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(37, 211, 102, .4);
+}
+
+.popup-option.telegram {
+  background: linear-gradient(135deg, #0088cc, #006699);
+  box-shadow: 0 4px 14px rgba(0, 136, 204, .25);
+}
+
+.popup-option.telegram:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 136, 204, .4);
+}
+
+.option-icon {
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, .2);
+  flex-shrink: 0;
+}
+
+.option-icon img {
+  width: 28px;
+  height: 28px;
+}
+
+.logo-nav {
+  display: flex;
+  align-items: center;
+  gap: .65rem;
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: var(--brand-primary);
+  text-decoration: none;
+}
+
+.logo-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  overflow: hidden;
+  background: linear-gradient(135deg, #4f46e5, #7c3aed);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+}
+
+.logo-icon img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  filter: brightness(0) invert(1);
+}
+
+.nav-actions {
+  display: flex;
+  gap: .75rem;
+  align-items: center;
+}
+
+.navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  background: rgba(255, 255, 255, .92);
+  backdrop-filter: blur(24px);
+  border-bottom: 1px solid var(--border);
+  z-index: 1000;
+}
+
+.nav-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 2rem;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.nav-btn {
+  padding: .5rem 1.1rem;
+  border-radius: 12px;
+  font-weight: 600;
+  transition: all .2s;
+  border: none;
+  cursor: pointer;
+  font-size: .875rem;
+  font-family: inherit;
+}
+
+.nav-btn-outline {
+  color: var(--text-secondary);
+  border: 1.5px solid var(--border);
+  background: transparent;
+}
+
+.nav-btn-outline:hover {
+  background: var(--surface-alt);
+  border-color: #cbd5e1;
+}
+
+.nav-btn-primary {
+  background: linear-gradient(135deg, #4f46e5, #7c3aed);
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(79, 70, 229, .3);
+}
+
+.nav-btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(79, 70, 229, .4);
+}
+
+@keyframes popupIn {
+  from {
+    opacity: 0;
+    transform: scale(.92) translateY(12px);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+  .view-group-container {
+    padding: 80px 1rem 3rem;
+  }
+
+  .group-name {
+    font-size: 1.35rem;
+  }
+
+  .group-meta {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .direct-link {
+    font-size: .95rem;
+    padding: .9rem 1.5rem;
+  }
+
+  .nav-container {
+    padding: 0 1rem;
+    height: 56px;
+  }
+
+  .nav-btn {
+    padding: .45rem .8rem;
+    font-size: .8rem;
+  }
+}
+
+@media (max-width: 400px) {
+  .group-meta {
+    grid-template-columns: 1fr;
+  }
 }

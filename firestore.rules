@@ -1,0 +1,45 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // WARNING: The application currently uses a custom 'credentials' collection
+    // instead of Firebase Authentication. This means `request.auth` is always null.
+    // To prevent the app from breaking, these rules currently allow public read/write.
+    // IMPORTANT: It is highly recommended to migrate the Admin Login to Firebase Auth 
+    // (signInWithEmailAndPassword) and update these rules to: 
+    // `allow write: if request.auth != null;` for secure Admin collections.
+    
+    // Public collections (Anyone can submit a group)
+    match /whatsapp/{document} {
+      allow read, write: if true;
+    }
+    
+    match /telegramGroups/{document} {
+      allow read, write: if true;
+    }
+    
+    // Approved collections (Currently public write due to lack of Firebase Auth)
+    match /ApprovedWA/{document} {
+      allow read, write: if true;
+    }
+    
+    match /ApprovedTG/{document} {
+      allow read, write: if true;
+    }
+
+    // Admin Configurations
+    match /dropdowns/{document} {
+      allow read, write: if true;
+    }
+
+    // Admin Credentials
+    match /credentials/{document} {
+      allow read, write: if true; // Extremely insecure. Migrate to Firebase Auth.
+    }
+    
+    // Default deny for anything else
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

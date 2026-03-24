@@ -23,7 +23,7 @@ function ViewGroup() {
       try {
         setLoading(true);
         setError('');
-        
+
         // Validate platform first
         if (!['whatsapp', 'telegram'].includes(platform)) {
           setError(`Invalid platform: ${platform}`);
@@ -34,13 +34,13 @@ function ViewGroup() {
         // Determine correct collection
         const collectionName = platform === 'whatsapp' ? 'ApprovedWA' : 'ApprovedTG';
         console.log(`Fetching from ${collectionName}: ${groupId}`);
-        
+
         const groupRef = doc(db, collectionName, groupId);
         const groupSnap = await getDoc(groupRef);
 
         if (groupSnap.exists()) {
           const groupData = groupSnap.data();
-          
+
           // Validate required fields
           if (!groupData.link) {
             setError('Group link is missing in database record');
@@ -78,7 +78,7 @@ function ViewGroup() {
     try {
       const collectionName = platform === 'whatsapp' ? 'ApprovedWA' : 'ApprovedTG';
       const groupRef = doc(db, collectionName, groupId);
-      
+
       await updateDoc(groupRef, {
         reports: arrayUnion({
           text: reportText.substring(0, 150),
@@ -132,7 +132,7 @@ function ViewGroup() {
           <p><strong>Platform:</strong> {platform}</p>
           <p><strong>Group ID:</strong> {groupId}</p>
         </div>
-        <button 
+        <button
           className="back-button"
           onClick={() => navigate('/')}
         >
@@ -147,7 +147,7 @@ function ViewGroup() {
       <div className="not-found-container">
         <h2>Group Not Found</h2>
         <p>The requested group could not be found in our database.</p>
-        <button 
+        <button
           className="back-button"
           onClick={() => navigate('/')}
         >
@@ -208,8 +208,8 @@ function ViewGroup() {
             <button className="nav-btn nav-btn-outline" onClick={() => navigate('/')}>
               Browse
             </button>
-            <button 
-              className="nav-btn nav-btn-primary" 
+            <button
+              className="nav-btn nav-btn-primary"
               onClick={() => setShowAddGroupPopup(true)}
             >
               Add Group
@@ -237,7 +237,7 @@ function ViewGroup() {
           </span>
         </div>
 
-        <button 
+        <button
           className="report-button"
           onClick={() => setShowReport(!showReport)}
         >
@@ -302,10 +302,10 @@ function ViewGroup() {
         )}
 
         <div className="action-section">
-          <a 
-            href={group.link} 
-            target="_blank" 
-            rel="noopener noreferrer" 
+          <a
+            href={group.link}
+            target="_blank"
+            rel="noopener noreferrer"
             className={`direct-link ${platform}`}
           >
             Join {platform === 'whatsapp' ? 'WhatsApp Group' : 'Telegram Channel'}
@@ -325,7 +325,7 @@ function ViewGroup() {
           </div>
         </div>
 
-        <button 
+        <button
           className="back-button"
           onClick={() => navigate('/')}
         >

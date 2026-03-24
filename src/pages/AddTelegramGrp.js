@@ -44,7 +44,7 @@ const AddTelegramGroup = () => {
   const countryRef = useRef(null);
   const languageRef = useRef(null);
 
-  const telegramLinkPattern = /^https:\/\/t\.me\/(?:\+[a-zA-Z0-9_-]{5,32}|[a-zA-Z0-9_]{5,32})$|^(\+[a-zA-Z0-9_-]{5,32}|[a-zA-Z0-9_]{5,32})$/;
+  const telegramLinkPattern = /^https:\/\/t\.me\/(?:joinchat\/[a-zA-Z0-9_-]+|\+[a-zA-Z0-9_-]{5,32}|[a-zA-Z0-9_]{5,32})$|^(\+[a-zA-Z0-9_-]{5,32}|[a-zA-Z0-9_]{5,32})$/;
 
   // Admin button shortcut
   useEffect(() => {
@@ -235,7 +235,7 @@ const AddTelegramGroup = () => {
 
       // Validate Telegram link format
       if (!telegramLinkPattern.test(formData.link)) {
-        alert('Invalid Telegram link format!\nMust be: https://t.me/username or username');
+        alert('Invalid Telegram link format!\nMust be: https://t.me/username, https://t.me/joinchat/... or username');
         return;
       }
 
@@ -341,7 +341,12 @@ const AddTelegramGroup = () => {
       <div className="add-telegram-container">
         <div className="add-telegram-form-container">
           <div className="form-content">
-            <h1 className="form-header">Add Telegram Group/Channel</h1>
+            <h1 className="form-header">
+              <span className="form-header-icon">
+                <img src="/telegram.png" alt="" />
+              </span>
+              Add Telegram Group/Channel
+            </h1>
 
             <form onSubmit={handleSubmit} className="form-main">
               {/* Group Name */}

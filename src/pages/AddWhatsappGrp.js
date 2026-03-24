@@ -358,7 +358,12 @@ const AddWhatsappGroup = () => {
       <div className="add-whatsapp-container">
         <div className="add-whatsapp-form-container">
           <div className="form-content">
-            <h1 className="form-header">Add WhatsApp Group</h1>
+            <h1 className="form-header">
+              <span className="form-header-icon">
+                <img src="/whatsapp.png" alt="" />
+              </span>
+              Add WhatsApp Group
+            </h1>
 
             <form onSubmit={handleSubmit} className="form-main">
               {/* Group Name */}
@@ -587,8 +592,130 @@ const AddWhatsappGroup = () => {
 
               <div className="whatsapp-guide">
                 <h3>📘 WhatsApp Group Guide</h3>
-                
-                {/* ... rest of the guide section remains unchanged ... */}
+
+                <div className="guide-subsection">
+                  <h4>🔹 WhatsApp Group Types</h4>
+                  <ol>
+                    <li><strong>Private Group:</strong> Invite-only. Only existing members can add new participants (unless changed by admin).</li>
+                    <li><strong>Group with Invite Link:</strong> Anyone with the invite link can join without being added by a member.</li>
+                  </ol>
+                </div>
+
+                <div className="guide-subsection">
+                  <h4>🛠️ How to Create a WhatsApp Group</h4>
+                  <ol>
+                    <li>Open <strong>WhatsApp</strong>.</li>
+                    <li>Tap the <strong>menu</strong> (⋮) or <strong>New Chat</strong> icon &gt; choose <strong>New Group</strong>.</li>
+                    <li>Select at least one contact to add.</li>
+                    <li>Enter a <strong>Group Name</strong> (up to 100 characters) and optionally set a <strong>Group Icon</strong>.</li>
+                    <li>Tap <strong>Create</strong>.</li>
+                  </ol>
+                </div>
+
+                <div className="guide-subsection">
+                  <h4>🌐 How to Get a WhatsApp Invite Link</h4>
+                  <ol>
+                    <li>Open the group chat.</li>
+                    <li>Tap the group name at the top.</li>
+                    <li>Scroll down and tap <strong>Invite via Link</strong>.</li>
+                    <li>Choose <strong>Copy Link</strong>, <strong>Share Link</strong>, or <strong>QR Code</strong>.</li>
+                  </ol>
+                </div>
+
+                <div className="guide-subsection">
+                  <h4>🚫 How to Revoke a WhatsApp Group Link</h4>
+                  <div className="method">
+                    <h5><strong>To Reset the Invite Link:</strong></h5>
+                    <ol>
+                      <li>Open the group chat.</li>
+                      <li>Tap the group name &gt; <strong>Invite via Link</strong>.</li>
+                      <li>Tap <strong>Reset Link</strong>.</li>
+                    </ol>
+                  </div>
+                  <p className="note">Resetting the link will disable the old one instantly. A new link is generated automatically.</p>
+                </div>
+
+                <div className="guide-subsection">
+                  <h4>👑 Group Admin Features</h4>
+                  <ul>
+                    <li>Add/remove members.</li>
+                    <li>Promote other members to admin.</li>
+                    <li>Control who can send messages (All Members or Admins Only).</li>
+                    <li>Control who can edit group info (name, icon, description).</li>
+                    <li>Approve new member requests (with approval mode).</li>
+                    <li>Remove or block members.</li>
+                  </ul>
+                </div>
+
+                <div className="guide-subsection">
+                  <h4>💡 General WhatsApp Group Features</h4>
+                  <ul>
+                    <li>Up to <strong>1,024 members</strong> per group.</li>
+                    <li>Send messages, images, videos, documents, polls, and voice notes.</li>
+                    <li>Pin important messages (up to 3 at a time).</li>
+                    <li>Mention members with @name.</li>
+                    <li>Reply to specific messages.</li>
+                    <li>Create announcements-only groups.</li>
+                  </ul>
+                </div>
+
+                <div className="guide-subsection">
+                  <h4>⚙️ Group Settings Overview</h4>
+                  <ul>
+                    <li><strong>Group Name:</strong> Up to 100 characters.</li>
+                    <li><strong>Description:</strong> Optional, visible in group info.</li>
+                    <li><strong>Send Messages:</strong> All Members or Admins Only.</li>
+                    <li><strong>Edit Group Info:</strong> All Members or Admins Only.</li>
+                    <li><strong>Add Members:</strong> All Members or Admins Only.</li>
+                    <li><strong>Approve New Members:</strong> Enable to manually review join requests.</li>
+                  </ul>
+                </div>
+
+                <div className="guide-subsection">
+                  <h4>👥 Managing Group Members</h4>
+                  <ul>
+                    <li>Add via contacts or share an invite link.</li>
+                    <li>Enable "Approve New Members" for manual join control.</li>
+                    <li>Remove spammers by tapping their name &gt; Remove.</li>
+                    <li>Promote trusted members to admin roles.</li>
+                  </ul>
+                </div>
+
+                <div className="guide-subsection">
+                  <h4>📏 WhatsApp Limitations</h4>
+                  <ul>
+                    <li>Max <strong>1,024 members</strong> per group.</li>
+                    <li>Max file size for uploads: <strong>2 GB</strong>.</li>
+                    <li>Max <strong>3 pinned messages</strong>.</li>
+                    <li>Group name limit: <strong>100 characters</strong>.</li>
+                  </ul>
+                </div>
+
+                <div className="guide-subsection">
+                  <h4>🤝 Group Etiquette Tips</h4>
+                  <ul>
+                    <li>Respect all members.</li>
+                    <li>Stay on topic.</li>
+                    <li>Avoid excessive forwarding or spam.</li>
+                    <li>Use pinned messages and group description wisely.</li>
+                  </ul>
+                </div>
+
+                <div className="guide-subsection">
+                  <h4>❓ FAQs</h4>
+                  <div className="faq-item">
+                    <p><strong>Q1:</strong> <em>How to submit a WhatsApp group to multilinks.cloud?</em></p>
+                    <p>→ Use the group submission form above and paste your WhatsApp invite link (starts with https://chat.whatsapp.com/).</p>
+                  </div>
+                  <div className="faq-item">
+                    <p><strong>Q2:</strong> <em>Can I remove my group from the site later?</em></p>
+                    <p>→ Yes, contact support via the site or email.</p>
+                  </div>
+                  <div className="faq-item">
+                    <p><strong>Q3:</strong> <em>Is my WhatsApp link safe on this platform?</em></p>
+                    <p>→ Yes, but it's public. You can reset it anytime from WhatsApp Group Settings.</p>
+                  </div>
+                </div>
               </div>
             </div>
 

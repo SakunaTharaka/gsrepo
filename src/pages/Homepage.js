@@ -1,7 +1,8 @@
 // Homepage.js
 import React, { useEffect, useState, useRef } from 'react';
 import { db } from '../firebase';
-import { doc, getDoc, collection, query, getDocs, orderBy, limit, startAfter } from 'firebase/firestore';
+import { doc, getDoc, collection, query, getDocs, orderBy, limit, where, getCountFromServer } from 'firebase/firestore';
+import { Pagination, Stack } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import '../css/Homepage.css';
 
@@ -18,8 +19,8 @@ function Homepage() {
   const [selectedPlatform, setSelectedPlatform] = useState('whatsapp');
   const [groups, setGroups] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [lastVisible, setLastVisible] = useState(null);
-  const [hasMore, setHasMore] = useState(true);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
   const [showAddGroupPopup, setShowAddGroupPopup] = useState(false);
 
   // Refs
@@ -31,7 +32,7 @@ function Homepage() {
   // Read URL parameters on component mount
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    
+
     // Set platform from URL
     const platformParam = params.get('platform');
     if (platformParam === 'whatsapp' || platformParam === 'telegram') {
@@ -42,7 +43,7 @@ function Homepage() {
     setSelectedCategory(params.get('category') || '');
     setSelectedCountry(params.get('country') || '');
     setSelectedLanguage(params.get('language') || '');
-    
+
     // Initialize stats with animation
     const animateStats = () => {
       const statsElements = document.querySelectorAll('.stat-number');
@@ -51,7 +52,7 @@ function Homepage() {
         let count = 0;
         const duration = 2000;
         const increment = target / (duration / 16);
-        
+
         const updateCount = () => {
           count += increment;
           if (count < target) {
@@ -61,11 +62,11 @@ function Homepage() {
             el.textContent = target;
           }
         };
-        
+
         requestAnimationFrame(updateCount);
       });
     };
-    
+
     // Set stats after a delay to allow DOM to render
     setTimeout(() => {
       animateStats();
@@ -106,97 +107,52 @@ function Homepage() {
     return () => window.removeEventListener('keydown', handleKeyPress);
   }, []);
 
-  // Load groups
-  useEffect(() => {
-    const loadGroups = async () => {
-      setIsLoading(true);
-      try {
-        const collectionName = selectedPlatform === 'whatsapp' 
-          ? 'ApprovedWA' 
-          : 'ApprovedTG';
-          
-        let q = query(
-          collection(db, collectionName),
-          orderBy('createdAt', 'desc'),
-          limit(21)
-        );
-
-        const snapshot = await getDocs(q);
-        let groupsData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-
-        if (selectedCategory) {
-          groupsData = groupsData.filter(group => 
-            group.category.toLowerCase() === selectedCategory.toLowerCase()
-          );
-        }
-        if (selectedCountry) {
-          groupsData = groupsData.filter(group => 
-            group.country.toLowerCase() === selectedCountry.toLowerCase()
-          );
-        }
-        if (selectedLanguage) {
-          groupsData = groupsData.filter(group => 
-            group.language.toLowerCase() === selectedLanguage.toLowerCase()
-          );
-        }
-
-        setGroups(groupsData);
-        setLastVisible(snapshot.docs[snapshot.docs.length - 1] || null);
-        setHasMore(snapshot.docs.length === 20);
-      } catch (error) {
-        console.error('Error loading groups:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    loadGroups();
-  }, [selectedPlatform, selectedCategory, selectedCountry, selectedLanguage]);
-
-  const handleLoadMore = async () => {
-    if (!lastVisible || isLoading) return;
-
+  // Fetch specific page of groups
+  const fetchPage = async (pageNumber) => {
     setIsLoading(true);
     try {
-      const collectionName = selectedPlatform === 'whatsapp' 
-        ? 'ApprovedWA' 
-        : 'ApprovedTG';
-        
-      const q = query(
-        collection(db, collectionName), 
-        orderBy('createdAt', 'desc'),
-        startAfter(lastVisible),
-        limit(20)
-      );
-      
-      const snapshot = await getDocs(q);
-      let newGroups = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      const collectionName = selectedPlatform === 'whatsapp' ? 'ApprovedWA' : 'ApprovedTG';
 
-      if (selectedCategory) {
-        newGroups = newGroups.filter(group => 
-          group.category.toLowerCase() === selectedCategory.toLowerCase()
-        );
-      }
-      if (selectedCountry) {
-        newGroups = newGroups.filter(group => 
-          group.country.toLowerCase() === selectedCountry.toLowerCase()
-        );
-      }
-      if (selectedLanguage) {
-        newGroups = newGroups.filter(group => 
-          group.language.toLowerCase() === selectedLanguage.toLowerCase()
-        );
-      }
+      let constraints = [];
+      if (selectedCategory) constraints.push(where('category', '==', selectedCategory));
+      if (selectedCountry) constraints.push(where('country', '==', selectedCountry));
+      if (selectedLanguage) constraints.push(where('language', '==', selectedLanguage));
+
+      const baseQuery = query(collection(db, collectionName), ...constraints);
       
-      setGroups(prev => [...prev, ...newGroups]);
-      setLastVisible(snapshot.docs[snapshot.docs.length - 1] || null);
-      setHasMore(snapshot.docs.length === 20);
+      // Get total count
+      const snapshotCount = await getCountFromServer(baseQuery);
+      const total = snapshotCount.data().count;
+      setTotalPages(Math.ceil(total / 30) || 1);
+
+      // Get page data using limit
+      const q = query(
+        collection(db, collectionName),
+        ...constraints,
+        orderBy('createdAt', 'desc'),
+        limit(pageNumber * 30)
+      );
+
+      const snapshot = await getDocs(q);
+      const allDocs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      
+      // Slice for current page
+      const startIndex = (pageNumber - 1) * 30;
+      const docsForPage = allDocs.slice(startIndex, startIndex + 30);
+      
+      setGroups(docsForPage);
+      setPage(pageNumber);
     } catch (error) {
-      console.error('Error loading more groups:', error);
+      console.error('Error loading groups:', error);
     } finally {
       setIsLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchPage(1);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedPlatform, selectedCategory, selectedCountry, selectedLanguage]);
 
   // Clear all filters
   const clearFilters = () => {
@@ -223,18 +179,34 @@ function Homepage() {
   // Handle share button click
   const handleShareGroup = (group) => {
     const groupUrl = `${window.location.origin}/viewgroup/${selectedPlatform}/${group.id}`;
-    
+
     if (navigator.share) {
       navigator.share({
         title: group.name,
         text: group.description || 'Join this community on Multilinks.cloud',
         url: groupUrl
-      })
-      .catch(console.error);
+      }).catch(console.error);
+    } else if (navigator.clipboard && navigator.clipboard.writeText) {
+      // Modern fallback for desktop browsers (requires HTTPS)
+      navigator.clipboard.writeText(groupUrl).then(() => {
+        alert('Link copied to clipboard!');
+      }).catch(console.error);
     } else {
-      // Fallback for desktop browsers
-      navigator.clipboard.writeText(groupUrl);
-      alert('Link copied to clipboard!');
+      // Legacy fallback for HTTP or older browsers
+      const textArea = document.createElement('textarea');
+      textArea.value = groupUrl;
+      textArea.style.position = 'fixed'; // Avoid scrolling
+      document.body.appendChild(textArea);
+      textArea.focus();
+      textArea.select();
+      try {
+        document.execCommand('copy');
+        alert('Link copied to clipboard!');
+      } catch (err) {
+        console.error('Copy failed', err);
+        alert(`Failed to copy. Please manually copy this link: ${groupUrl}`);
+      }
+      document.body.removeChild(textArea);
     }
   };
 
@@ -269,7 +241,7 @@ function Homepage() {
   // Helper functions
   const getGroupAvatar = (group) => group.iconUrl || group.avatar;
   const truncateText = (text, max) => text?.length > max ? `${text.slice(0, max)}...` : text;
-  
+
   // Scroll to search section
   const scrollToSearch = () => {
     searchSectionRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -324,8 +296,8 @@ function Homepage() {
             <button className="nav-btn nav-btn-outline" onClick={scrollToSearch}>
               Browse
             </button>
-            <button 
-              className="nav-btn nav-btn-primary" 
+            <button
+              className="nav-btn nav-btn-primary"
               onClick={() => setShowAddGroupPopup(true)}
             >
               Add Group
@@ -336,38 +308,25 @@ function Homepage() {
 
       {/* Hero Section */}
       <section className="hero">
-        <div className="floating-element">
-          <svg width="60" height="60" fill="currentColor" viewBox="0 0 24 24">
-            <circle cx="12" cy="12" r="3"/>
-          </svg>
-        </div>
-        <div className="floating-element">
-          <svg width="40" height="40" fill="currentColor" viewBox="0 0 24 24">
-            <rect x="3" y="3" width="18" height="18" rx="2"/>
-          </svg>
-        </div>
-        <div className="floating-element">
-          <svg width="50" height="50" fill="currentColor" viewBox="0 0 24 24">
-            <polygon points="12 2 22 8.5 22 15.5 12 22 2 15.5 2 8.5 12 2"/>
-          </svg>
-        </div>
+        <div className="hero-dots"></div>
+
 
         <div className="hero-content">
           <div className="hero-badge">
             <span>🚀</span>
             Join 500K+ members worldwide
           </div>
-          
-          <h1 className="hero-title">Find Your Perfect Community</h1>
+
+          <h1 className="hero-title">Find Your <span>Perfect Community</span></h1>
           <p className="hero-subtitle">
             Discover and connect with thousands of active WhatsApp and Telegram groups across every topic imaginable
           </p>
-          
+
           <div className="hero-actions">
             <button className="btn btn-primary" onClick={scrollToSearch}>
               <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
-                <circle cx="11" cy="11" r="8"/>
-                <path d="m21 21-4.35-4.35"/>
+                <circle cx="11" cy="11" r="8" />
+                <path d="m21 21-4.35-4.35" />
               </svg>
               Explore Groups
             </button>
@@ -377,20 +336,20 @@ function Homepage() {
           <div className="search-section" ref={searchSectionRef}>
             <div className="search-container">
               <svg className="search-icon" fill="currentColor" viewBox="0 0 24 24">
-                <circle cx="11" cy="11" r="8"/>
-                <path d="m21 21-4.35-4.35"/>
+                <circle cx="11" cy="11" r="8" />
+                <path d="m21 21-4.35-4.35" />
               </svg>
-              <input 
-                type="text" 
-                className="search-input" 
+              <input
+                type="text"
+                className="search-input"
                 placeholder="Search for communities, topics, or interests..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
-            
+
             <div className="filters">
-              <select 
+              <select
                 className="filter-select"
                 value={selectedCategory}
                 onChange={(e) => setSelectedCategory(e.target.value)}
@@ -400,8 +359,8 @@ function Homepage() {
                   <option key={cat} value={cat}>{cat}</option>
                 ))}
               </select>
-              
-              <select 
+
+              <select
                 className="filter-select"
                 value={selectedCountry}
                 onChange={(e) => setSelectedCountry(e.target.value)}
@@ -411,8 +370,8 @@ function Homepage() {
                   <option key={country} value={country}>{country}</option>
                 ))}
               </select>
-              
-              <select 
+
+              <select
                 className="filter-select"
                 value={selectedLanguage}
                 onChange={(e) => setSelectedLanguage(e.target.value)}
@@ -422,16 +381,16 @@ function Homepage() {
                   <option key={lang} value={lang}>{lang}</option>
                 ))}
               </select>
-              
+
               <div className="platform-select">
-                <div 
+                <div
                   className={`platform-option ${selectedPlatform === 'whatsapp' ? 'active' : ''}`}
                   onClick={() => setSelectedPlatform('whatsapp')}
                 >
                   <img src="/whatsapp.png" alt="WhatsApp" className="platform-icon" />
                   WhatsApp
                 </div>
-                <div 
+                <div
                   className={`platform-option ${selectedPlatform === 'telegram' ? 'active' : ''}`}
                   onClick={() => setSelectedPlatform('telegram')}
                 >
@@ -439,8 +398,8 @@ function Homepage() {
                   Telegram
                 </div>
               </div>
-              
-              <button 
+
+              <button
                 className="clear-filters-btn"
                 onClick={clearFilters}
               >
@@ -477,14 +436,14 @@ function Homepage() {
           <h2 className="section-title">Featured Communities</h2>
           <p className="section-subtitle">Join these trending groups and connect with like-minded people</p>
         </div>
-        
+
         <div className="groups-grid">
           {filteredGroups.length === 0 && !isLoading ? (
             <div className="no-groups">No groups found matching your criteria</div>
           ) : (
             filteredGroups.map((group, index) => (
-              <div 
-                key={group.id} 
+              <div
+                key={group.id}
                 className={`group-card loading stagger-${(index % 5) + 1}`}
               >
                 <div className="group-header">
@@ -492,9 +451,9 @@ function Homepage() {
                     {getGroupAvatar(group) ? (
                       <img src={getGroupAvatar(group)} alt={group.name} />
                     ) : (
-                      <img 
-                        src={selectedPlatform === 'whatsapp' ? "/whatsapp.png" : "/telegram.png"} 
-                        alt={selectedPlatform} 
+                      <img
+                        src={selectedPlatform === 'whatsapp' ? "/whatsapp.png" : "/telegram.png"}
+                        alt={selectedPlatform}
                         className="platform-logo"
                       />
                     )}
@@ -537,23 +496,23 @@ function Homepage() {
                   ))}
                 </div>
                 <div className="group-actions">
-                  <button 
+                  <button
                     className="btn-join"
                     onClick={() => handleJoinGroup(group)}
                   >
                     Join Group
                   </button>
-                  <button 
+                  <button
                     className="btn-share"
                     onClick={() => handleShareGroup(group)}
                   >
-                    <img 
-                     src="/share.ico" 
-                      alt="Share" 
-                      className="share-icon" 
-                      width="16" 
-                      height="16" 
-  />
+                    <img
+                      src="/share.ico"
+                      alt="Share"
+                      className="share-icon"
+                      width="16"
+                      height="16"
+                    />
                     Share
                   </button>
                 </div>
@@ -561,19 +520,54 @@ function Homepage() {
             ))
           )}
         </div>
-        
-        {hasMore && (
-          <div className="load-more">
-            <button 
-              onClick={handleLoadMore} 
-              disabled={isLoading}
-              className="load-more-btn"
-            >
-              {isLoading ? 'Loading...' : 'Load More Groups'}
-            </button>
+
+        {totalPages > 0 && (
+          <div className="pagination-container" style={{ display: 'flex', justifyContent: 'center', marginTop: '3rem', marginBottom: '2rem' }}>
+            <Stack spacing={2}>
+              <Pagination 
+                count={totalPages} 
+                page={page} 
+                onChange={(e, val) => fetchPage(val)} 
+                color="primary" 
+                size="large" 
+                disabled={isLoading}
+              />
+            </Stack>
           </div>
         )}
       </section>
+
+      {/* Footer */}
+      <footer className="site-footer">
+        <div className="footer-inner">
+          <div className="footer-brand">
+            <a href="/" className="footer-logo">
+              <span className="footer-logo-icon">
+                <img src="/logo512.png" alt="Multilinks" />
+              </span>
+              Multilinks
+            </a>
+            <p className="footer-tagline">Discover and join the best WhatsApp &amp; Telegram communities worldwide.</p>
+          </div>
+          <div className="footer-links">
+            <div className="footer-col">
+              <h4>Platform</h4>
+              <a href="/?platform=whatsapp">WhatsApp Groups</a>
+              <a href="/?platform=telegram">Telegram Groups</a>
+              <a href="/add-whatsapp-group">Add Group</a>
+            </div>
+            <div className="footer-col">
+              <h4>Browse</h4>
+              <a href="/?category=Education">Education</a>
+              <a href="/?category=Technology">Technology</a>
+              <a href="/?category=Business">Business</a>
+            </div>
+          </div>
+        </div>
+        <div className="footer-bottom">
+          © {new Date().getFullYear()} Multilinks — Connecting communities worldwide.
+        </div>
+      </footer>
     </div>
   );
 }
