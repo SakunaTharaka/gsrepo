@@ -7,7 +7,6 @@ import {
   useLocation
 } from 'react-router-dom';
 import { 
-  CircularProgress,
   Typography,
   Button 
 } from '@mui/material';

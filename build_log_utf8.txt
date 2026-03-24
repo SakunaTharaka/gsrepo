@@ -1,0 +1,19 @@
+﻿
+> groupshare@0.1.0 build
+> react-scripts build
+
+Creating an optimized production build...
+
+Treating warnings as errors because process.env.CI = true.
+Most CI servers set it automatically.
+
+Failed to compile.
+
+[eslint] 
+src\App.js
+  Line 10:3:  'CircularProgress' is defined but never used  no-unused-vars
+
+src\firebase.js
+  Line 20:7:  'analytics' is assigned a value but never used  no-unused-vars
+
+
