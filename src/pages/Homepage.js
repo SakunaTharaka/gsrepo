@@ -162,13 +162,7 @@ function Homepage() {
     setSearchQuery('');
   };
 
-  // Handle filter link clicks
-  const handleFilterClick = (type, value) => {
-    const url = new URL(window.location.origin);
-    url.searchParams.set('platform', selectedPlatform);
-    url.searchParams.set(type, value);
-    window.open(url.toString(), '_blank');
-  };
+
 
   // Handle join group button click
   const handleJoinGroup = (group) => {
@@ -176,39 +170,7 @@ function Homepage() {
     window.open(launchUrl, '_blank', 'noopener,noreferrer');
   };
 
-  // Handle share button click
-  const handleShareGroup = (group) => {
-    const groupUrl = `${window.location.origin}/viewgroup/${selectedPlatform}/${group.id}`;
 
-    if (navigator.share) {
-      navigator.share({
-        title: group.name,
-        text: group.description || 'Join this community on Multilinks.cloud',
-        url: groupUrl
-      }).catch(console.error);
-    } else if (navigator.clipboard && navigator.clipboard.writeText) {
-      // Modern fallback for desktop browsers (requires HTTPS)
-      navigator.clipboard.writeText(groupUrl).then(() => {
-        alert('Link copied to clipboard!');
-      }).catch(console.error);
-    } else {
-      // Legacy fallback for HTTP or older browsers
-      const textArea = document.createElement('textarea');
-      textArea.value = groupUrl;
-      textArea.style.position = 'fixed'; // Avoid scrolling
-      document.body.appendChild(textArea);
-      textArea.focus();
-      textArea.select();
-      try {
-        document.execCommand('copy');
-        alert('Link copied to clipboard!');
-      } catch (err) {
-        console.error('Copy failed', err);
-        alert(`Failed to copy. Please manually copy this link: ${groupUrl}`);
-      }
-      document.body.removeChild(textArea);
-    }
-  };
 
   // Handle add group buttons
   const handleAddWhatsAppGroup = () => {
@@ -444,10 +406,10 @@ function Homepage() {
             filteredGroups.map((group, index) => (
               <div
                 key={group.id}
-                className={`group-card loading stagger-${(index % 5) + 1} ${selectedPlatform === 'whatsapp' ? 'whatsapp-card' : 'telegram-card'}`}
+                className={`group-card-horizontal loading stagger-${(index % 5) + 1} ${selectedPlatform === 'whatsapp' ? 'whatsapp-card' : 'telegram-card'}`}
               >
-                <div className="group-header">
-                  <div className="group-avatar">
+                <div className="group-avatar-wrapper">
+                  <div className="group-avatar-rounded">
                     {getGroupAvatar(group) ? (
                       <img src={getGroupAvatar(group)} alt={group.name} />
                     ) : (
@@ -458,63 +420,36 @@ function Homepage() {
                       />
                     )}
                   </div>
-                  <div className="group-info">
+                </div>
+                
+                <div className="group-content-body">
+                  <div className="group-title-row">
                     <h3>{group.name}</h3>
-                    <div className="group-members">
-                      {group.members || '1,000+'} members
-                    </div>
                   </div>
-                </div>
-                <p className="group-description">
-                  {truncateText(group.description, 120)}
-                </p>
-                <div className="group-meta">
-                  <span className="meta-inline">
-                    <button
-                      className="filter-link"
-                      onClick={() => handleFilterClick('category', group.category)}
-                    >
-                      🏷️ {group.category}
-                    </button>
-                    <button
-                      className="filter-link"
-                      onClick={() => handleFilterClick('country', group.country)}
-                    >
-                      🌍 {group.country}
-                    </button>
-                    <button
-                      className="filter-link"
-                      onClick={() => handleFilterClick('language', group.language)}
-                    >
-                      🗣️ {group.language}
-                    </button>
-                  </span>
-                </div>
-                <div className="group-tags">
-                  {group.tags?.slice(0, 3).map(tag => (
-                    <span key={tag} className="tag">{tag}</span>
-                  ))}
-                </div>
-                <div className="group-actions">
-                  <button
-                    className="btn-join"
-                    onClick={() => handleJoinGroup(group)}
-                  >
-                    Join Group
-                  </button>
-                  <button
-                    className="btn-share"
-                    onClick={() => handleShareGroup(group)}
-                  >
-                    <img
-                      src="/share.ico"
-                      alt="Share"
-                      className="share-icon"
-                      width="16"
-                      height="16"
-                    />
-                    Share
-                  </button>
+                  
+                  <div className="group-meta-row">
+                    <img src={selectedPlatform === 'whatsapp' ? "/whatsapp.png" : "/telegram.png"} alt={selectedPlatform} className="meta-platform-icon" />
+                    <span className="meta-text">{group.category}</span>
+                    <span className="meta-icon">🌍</span> <span className="meta-text">{group.country}</span>
+                    <span className="meta-icon">🗣️</span> <span className="meta-text">{group.language}</span>
+                  </div>
+                  
+                  <p className="group-desc-row">
+                    {truncateText(group.description, 130)}
+                    {group.description?.length > 130 && (
+                      <span className="continue-reading" onClick={() => handleJoinGroup(group)}>... continue reading</span>
+                    )}
+                  </p>
+                  
+                  <div className="group-tags-row">
+                    {group.tags?.slice(0, 4).map(tag => (
+                      <span key={tag} className="tag-pill">{tag}</span>
+                    ))}
+                  </div>
+                  
+                  <div className="group-actions-row">
+                    <button className="btn-join-text" onClick={() => handleJoinGroup(group)}>Join group</button>
+                  </div>
                 </div>
               </div>
             ))
