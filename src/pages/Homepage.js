@@ -444,7 +444,7 @@ function Homepage() {
             filteredGroups.map((group, index) => (
               <div
                 key={group.id}
-                className={`group-card loading stagger-${(index % 5) + 1}`}
+                className={`group-card loading stagger-${(index % 5) + 1} ${selectedPlatform === 'whatsapp' ? 'whatsapp-card' : 'telegram-card'}`}
               >
                 <div className="group-header">
                   <div className="group-avatar">

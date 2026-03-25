@@ -544,6 +544,25 @@
 
 .group-card:hover::before { transform: scaleX(1); }
 
+/* Platform specific card styles */
+.group-card.whatsapp-card {
+  background: #f4fdf8; /* soft light green */
+  border-color: #dcfce7;
+}
+
+.group-card.whatsapp-card::before {
+  background: linear-gradient(90deg, #4ade80, var(--wa-green));
+}
+
+.group-card.telegram-card {
+  background: #f0f7ff; /* soft light blue */
+  border-color: #e0f2fe;
+}
+
+.group-card.telegram-card::before {
+  background: linear-gradient(90deg, #38bdf8, var(--tg-blue));
+}
+
 .group-header {
   display: flex;
   align-items: center;
