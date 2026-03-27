@@ -39,10 +39,18 @@ const AddTelegramGroup = () => {
   const [countryInputValue, setCountryInputValue] = useState('');
   const [languageInputValue, setLanguageInputValue] = useState('');
 
+  // Highlighted index for keyboard navigation
+  const [categoryHighlightedIndex, setCategoryHighlightedIndex] = useState(-1);
+  const [countryHighlightedIndex, setCountryHighlightedIndex] = useState(-1);
+  const [languageHighlightedIndex, setLanguageHighlightedIndex] = useState(-1);
+
   // Refs for dropdown containers
   const categoryRef = useRef(null);
   const countryRef = useRef(null);
   const languageRef = useRef(null);
+  const categoryListRef = useRef(null);
+  const countryListRef = useRef(null);
+  const languageListRef = useRef(null);
 
   const telegramLinkPattern = /^https:\/\/t\.me\/(?:joinchat\/[a-zA-Z0-9_-]+|\+[a-zA-Z0-9_-]{5,32}|[a-zA-Z0-9_]{5,32})$|^(\+[a-zA-Z0-9_-]{5,32}|[a-zA-Z0-9_]{5,32})$/;
 
@@ -122,61 +130,159 @@ const AddTelegramGroup = () => {
   // Dropdown filtering handlers
   const handleCategorySearch = (value) => {
     setCategoryInputValue(value);
+    setCategoryHighlightedIndex(-1);
     setFilteredCategories(
       value ? categories.filter(c => c.toLowerCase().includes(value.toLowerCase()))
       : categories
     );
+    if (!showCategoryDropdown) setShowCategoryDropdown(true);
   };
 
   const handleCountrySearch = (value) => {
     setCountryInputValue(value);
+    setCountryHighlightedIndex(-1);
     setFilteredCountries(
       value ? countries.filter(c => c.toLowerCase().includes(value.toLowerCase()))
       : countries
     );
+    if (!showCountryDropdown) setShowCountryDropdown(true);
   };
 
   const handleLanguageSearch = (value) => {
     setLanguageInputValue(value);
+    setLanguageHighlightedIndex(-1);
     setFilteredLanguages(
       value ? languages.filter(l => l.toLowerCase().includes(value.toLowerCase()))
       : languages
     );
+    if (!showLanguageDropdown) setShowLanguageDropdown(true);
   };
 
   // Dropdown selection handlers
   const handleCategorySelect = (category) => {
     setFormData(prev => ({ ...prev, category }));
+    setCategoryInputValue(category);
     setShowCategoryDropdown(false);
     setFilteredCategories(categories);
+    setCategoryHighlightedIndex(-1);
   };
 
   const handleCountrySelect = (country) => {
     setFormData(prev => ({ ...prev, country }));
+    setCountryInputValue(country);
     setShowCountryDropdown(false);
     setFilteredCountries(countries);
+    setCountryHighlightedIndex(-1);
   };
 
   const handleLanguageSelect = (language) => {
     setFormData(prev => ({ ...prev, language }));
+    setLanguageInputValue(language);
     setShowLanguageDropdown(false);
     setFilteredLanguages(languages);
+    setLanguageHighlightedIndex(-1);
   };
 
-  // Input focus handlers
+  // Input focus handlers — clear search text & reset to full list on re-focus
   const handleCategoryFocus = () => {
-    setShowCategoryDropdown(true);
+    setCategoryInputValue('');
     setFilteredCategories(categories);
+    setCategoryHighlightedIndex(-1);
+    setShowCategoryDropdown(true);
   };
 
   const handleCountryFocus = () => {
-    setShowCountryDropdown(true);
+    setCountryInputValue('');
     setFilteredCountries(countries);
+    setCountryHighlightedIndex(-1);
+    setShowCountryDropdown(true);
   };
 
   const handleLanguageFocus = () => {
-    setShowLanguageDropdown(true);
+    setLanguageInputValue('');
     setFilteredLanguages(languages);
+    setLanguageHighlightedIndex(-1);
+    setShowLanguageDropdown(true);
+  };
+
+  // Scroll highlighted item into view
+  const scrollHighlightedIntoView = (listRef, index) => {
+    if (listRef.current) {
+      const items = listRef.current.querySelectorAll('.dropdown-item');
+      if (items[index]) {
+        items[index].scrollIntoView({ block: 'nearest' });
+      }
+    }
+  };
+
+  // Keyboard navigation handlers
+  const handleCategoryKeyDown = (e) => {
+    if (!showCategoryDropdown) return;
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      const next = Math.min(categoryHighlightedIndex + 1, filteredCategories.length - 1);
+      setCategoryHighlightedIndex(next);
+      scrollHighlightedIntoView(categoryListRef, next);
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      const prev = Math.max(categoryHighlightedIndex - 1, 0);
+      setCategoryHighlightedIndex(prev);
+      scrollHighlightedIntoView(categoryListRef, prev);
+    } else if (e.key === 'Enter') {
+      e.preventDefault();
+      if (categoryHighlightedIndex >= 0 && filteredCategories[categoryHighlightedIndex]) {
+        handleCategorySelect(filteredCategories[categoryHighlightedIndex]);
+      }
+    } else if (e.key === 'Escape') {
+      setShowCategoryDropdown(false);
+      setCategoryInputValue(formData.category);
+    }
+  };
+
+  const handleCountryKeyDown = (e) => {
+    if (!showCountryDropdown) return;
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      const next = Math.min(countryHighlightedIndex + 1, filteredCountries.length - 1);
+      setCountryHighlightedIndex(next);
+      scrollHighlightedIntoView(countryListRef, next);
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      const prev = Math.max(countryHighlightedIndex - 1, 0);
+      setCountryHighlightedIndex(prev);
+      scrollHighlightedIntoView(countryListRef, prev);
+    } else if (e.key === 'Enter') {
+      e.preventDefault();
+      if (countryHighlightedIndex >= 0 && filteredCountries[countryHighlightedIndex]) {
+        handleCountrySelect(filteredCountries[countryHighlightedIndex]);
+      }
+    } else if (e.key === 'Escape') {
+      setShowCountryDropdown(false);
+      setCountryInputValue(formData.country);
+    }
+  };
+
+  const handleLanguageKeyDown = (e) => {
+    if (!showLanguageDropdown) return;
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      const next = Math.min(languageHighlightedIndex + 1, filteredLanguages.length - 1);
+      setLanguageHighlightedIndex(next);
+      scrollHighlightedIntoView(languageListRef, next);
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      const prev = Math.max(languageHighlightedIndex - 1, 0);
+      setLanguageHighlightedIndex(prev);
+      scrollHighlightedIntoView(languageListRef, prev);
+    } else if (e.key === 'Enter') {
+      e.preventDefault();
+      if (languageHighlightedIndex >= 0 && filteredLanguages[languageHighlightedIndex]) {
+        handleLanguageSelect(filteredLanguages[languageHighlightedIndex]);
+      }
+    } else if (e.key === 'Escape') {
+      setShowLanguageDropdown(false);
+      setLanguageInputValue(formData.language);
+    }
   };
 
   // Tag management
@@ -373,22 +479,25 @@ const AddTelegramGroup = () => {
                     value={categoryInputValue}
                     onChange={(e) => handleCategorySearch(e.target.value)}
                     onFocus={handleCategoryFocus}
+                    onKeyDown={handleCategoryKeyDown}
                     className="form-input"
                     placeholder="Search category..."
+                    autoComplete="off"
                     required
                   />
                   <span className="dropdown-arrow"></span>
                 </div>
                 {showCategoryDropdown && (
-                  <div className="dropdown-list">
+                  <div className="dropdown-list" ref={categoryListRef}>
                     {filteredCategories.map((cat, i) => (
                       <div
                         key={i}
-                        className="dropdown-item"
+                        className={`dropdown-item${i === categoryHighlightedIndex ? ' dropdown-item-highlighted' : ''}`}
                         onMouseDown={(e) => {
                           e.preventDefault();
                           handleCategorySelect(cat);
                         }}
+                        onMouseEnter={() => setCategoryHighlightedIndex(i)}
                       >
                         {cat}
                       </div>
@@ -409,22 +518,25 @@ const AddTelegramGroup = () => {
                     value={countryInputValue}
                     onChange={(e) => handleCountrySearch(e.target.value)}
                     onFocus={handleCountryFocus}
+                    onKeyDown={handleCountryKeyDown}
                     className="form-input"
                     placeholder="Search country..."
+                    autoComplete="off"
                     required
                   />
                   <span className="dropdown-arrow"></span>
                 </div>
                 {showCountryDropdown && (
-                  <div className="dropdown-list">
+                  <div className="dropdown-list" ref={countryListRef}>
                     {filteredCountries.map((country, i) => (
                       <div
                         key={i}
-                        className="dropdown-item"
+                        className={`dropdown-item${i === countryHighlightedIndex ? ' dropdown-item-highlighted' : ''}`}
                         onMouseDown={(e) => {
                           e.preventDefault();
                           handleCountrySelect(country);
                         }}
+                        onMouseEnter={() => setCountryHighlightedIndex(i)}
                       >
                         {country}
                       </div>
@@ -445,22 +557,25 @@ const AddTelegramGroup = () => {
                     value={languageInputValue}
                     onChange={(e) => handleLanguageSearch(e.target.value)}
                     onFocus={handleLanguageFocus}
+                    onKeyDown={handleLanguageKeyDown}
                     className="form-input"
                     placeholder="Search language..."
+                    autoComplete="off"
                     required
                   />
                   <span className="dropdown-arrow"></span>
                 </div>
                 {showLanguageDropdown && (
-                  <div className="dropdown-list">
+                  <div className="dropdown-list" ref={languageListRef}>
                     {filteredLanguages.map((lang, i) => (
                       <div
                         key={i}
-                        className="dropdown-item"
+                        className={`dropdown-item${i === languageHighlightedIndex ? ' dropdown-item-highlighted' : ''}`}
                         onMouseDown={(e) => {
                           e.preventDefault();
                           handleLanguageSelect(lang);
                         }}
+                        onMouseEnter={() => setLanguageHighlightedIndex(i)}
                       >
                         {lang}
                       </div>

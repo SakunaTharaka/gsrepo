@@ -277,7 +277,8 @@
   color: var(--text-primary);
 }
 
-.dropdown-item:hover {
+.dropdown-item:hover,
+.dropdown-item-highlighted {
   background: var(--primary-light);
   color: var(--primary-hover);
 }
