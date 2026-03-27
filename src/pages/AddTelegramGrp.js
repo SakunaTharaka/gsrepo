@@ -302,7 +302,7 @@ const AddTelegramGroup = () => {
                 <div className="option-icon">
                   <img src="/whatsapp.png" alt="WhatsApp" />
                 </div>
-                <span>Add WhatsApp Group</span>
+                <span>Add WhatsApp Group/Channel</span>
               </button>
               <button className="popup-option telegram" onClick={handleAddTelegramGroup}>
                 <div className="option-icon">
@@ -332,7 +332,7 @@ const AddTelegramGroup = () => {
               className="nav-btn nav-btn-primary" 
               onClick={() => setShowAddGroupPopup(true)}
             >
-              Add Group
+              Add Group/Channel
             </button>
           </div>
         </div>

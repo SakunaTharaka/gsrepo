@@ -232,7 +232,7 @@ function Homepage() {
                 <div className="option-icon">
                   <img src="/whatsapp.png" alt="WhatsApp" />
                 </div>
-                <span>Add WhatsApp Group</span>
+                <span>Add WhatsApp Group/Channel</span>
               </button>
               <button className="popup-option telegram" onClick={handleAddTelegramGroup}>
                 <div className="option-icon">
@@ -262,7 +262,7 @@ function Homepage() {
               className="nav-btn nav-btn-primary"
               onClick={() => setShowAddGroupPopup(true)}
             >
-              Add Group
+              Add Group/Channel
             </button>
           </div>
         </div>
@@ -424,7 +424,23 @@ function Homepage() {
                 
                 <div className="group-content-body">
                   <div className="group-title-row">
-                    <h3>{group.name}</h3>
+                    <h3>
+                      {group.name}
+                      {selectedPlatform === 'whatsapp' && (
+                        <span style={{
+                          marginLeft: '8px',
+                          fontSize: '0.65em',
+                          padding: '2px 8px',
+                          borderRadius: '12px',
+                          verticalAlign: 'middle',
+                          backgroundColor: group.link?.includes('/channel/') ? '#e0f2fe' : '#dcfce7',
+                          color: group.link?.includes('/channel/') ? '#0284c7' : '#166534',
+                          fontWeight: 'bold'
+                        }}>
+                          {group.link?.includes('/channel/') ? 'Channel' : 'Group'}
+                        </span>
+                      )}
+                    </h3>
                   </div>
                   
                   <div className="group-meta-row">
@@ -448,7 +464,11 @@ function Homepage() {
                   </div>
                   
                   <div className="group-actions-row">
-                    <button className="btn-join-text" onClick={() => handleJoinGroup(group)}>Join group</button>
+                    <button className="btn-join-text" onClick={() => handleJoinGroup(group)}>
+                      {selectedPlatform === 'whatsapp' && group.link?.includes('/channel/')
+                        ? 'Join Channel'
+                        : 'Join group'}
+                    </button>
                   </div>
                 </div>
               </div>
@@ -489,7 +509,7 @@ function Homepage() {
               <h4>Platform</h4>
               <a href="/?platform=whatsapp">WhatsApp Groups</a>
               <a href="/?platform=telegram">Telegram Groups</a>
-              <a href="/add-whatsapp-group">Add Group</a>
+              <a href="/add-whatsapp-group">Add Group/Channel</a>
             </div>
             <div className="footer-col">
               <h4>Browse</h4>

@@ -118,7 +118,7 @@ const GroupCard = ({ group, isApproved, onAction }) => {
         {/* Platform Badge */}
         <Box sx={{ position: 'absolute', top: 12, right: 12 }}>
           <Chip 
-            label={group.platform || (group.link?.includes('whatsapp') ? 'WhatsApp' : 'Telegram')} 
+            label={group.platform || (group.link?.includes('whatsapp') ? (group.link?.includes('/channel/') ? 'WA Channel' : 'WA Group') : 'Telegram')} 
             size="small" 
             sx={{ 
               bgcolor: group.link?.includes('whatsapp') ? '#25D366' : '#0088cc', 

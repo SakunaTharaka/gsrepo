@@ -182,7 +182,7 @@ function ViewGroup() {
                 <div className="option-icon">
                   <img src="/whatsapp.png" alt="WhatsApp" />
                 </div>
-                <span>Add WhatsApp Group</span>
+                <span>Add WhatsApp Group/Channel</span>
               </button>
               <button className="popup-option telegram" onClick={handleAddTelegramGroup}>
                 <div className="option-icon">
@@ -212,7 +212,7 @@ function ViewGroup() {
               className="nav-btn nav-btn-primary"
               onClick={() => setShowAddGroupPopup(true)}
             >
-              Add Group
+              Add Group/Channel
             </button>
           </div>
         </div>
@@ -308,7 +308,7 @@ function ViewGroup() {
             rel="noopener noreferrer"
             className={`direct-link ${platform}`}
           >
-            Join {platform === 'whatsapp' ? 'WhatsApp Group' : 'Telegram Channel'}
+            Join {platform === 'whatsapp' ? (group.link?.includes('/channel/') ? 'WhatsApp Channel' : 'WhatsApp Group') : 'Telegram Channel'}
           </a>
 
           <div className="terms-conditions">

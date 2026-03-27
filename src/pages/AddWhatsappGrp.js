@@ -43,7 +43,7 @@ const AddWhatsappGroup = () => {
   const countryRef = useRef(null);
   const languageRef = useRef(null);
 
-  const whatsappLinkPattern = /^https:\/\/chat\.whatsapp\.com\/(invite\/)?[a-zA-Z0-9]{22}$/i;
+  const whatsappLinkPattern = /^https:\/\/(chat\.whatsapp\.com\/(invite\/)?[a-zA-Z0-9]{22}|www\.whatsapp\.com\/channel\/[a-zA-Z0-9_-]+)$/i;
 
   // Admin button shortcut
   useEffect(() => {
@@ -240,7 +240,7 @@ const AddWhatsappGroup = () => {
 
       // Validate WhatsApp link format
       if (!whatsappLinkPattern.test(formData.link)) {
-        alert('Invalid WhatsApp link format!\nMust be: https://chat.whatsapp.com/...');
+        alert('Invalid WhatsApp link format!\nMust be: https://chat.whatsapp.com/... or https://www.whatsapp.com/channel/...');
         return;
       }
 
@@ -319,7 +319,7 @@ const AddWhatsappGroup = () => {
                 <div className="option-icon">
                   <img src="/whatsapp.png" alt="WhatsApp" />
                 </div>
-                <span>Add WhatsApp Group</span>
+                <span>Add WhatsApp Group/Channel</span>
               </button>
               <button className="popup-option telegram" onClick={handleAddTelegramGroup}>
                 <div className="option-icon">
@@ -349,7 +349,7 @@ const AddWhatsappGroup = () => {
               className="nav-btn nav-btn-primary" 
               onClick={() => setShowAddGroupPopup(true)}
             >
-              Add Group
+              Add Group/Channel
             </button>
           </div>
         </div>
@@ -362,13 +362,13 @@ const AddWhatsappGroup = () => {
               <span className="form-header-icon">
                 <img src="/whatsapp.png" alt="" />
               </span>
-              Add WhatsApp Group
+              Add WhatsApp Group/Channel
             </h1>
 
             <form onSubmit={handleSubmit} className="form-main">
               {/* Group Name */}
               <div className="form-group">
-                <label className="form-label">Group Name </label>
+                <label className="form-label">Group/Channel Name </label>
                 <input
                   type="text"
                   name="name"
@@ -491,18 +491,18 @@ const AddWhatsappGroup = () => {
 
               {/* WhatsApp Link */}
               <div className="form-group">
-                <label className="form-label">WhatsApp Group Link </label>
+                <label className="form-label">WhatsApp Group/Channel Link </label>
                 <input
                   type="url"
                   name="link"
                   value={formData.link}
                   onChange={(e) => setFormData(prev => ({ ...prev, link: e.target.value }))}
                   className="form-input"
-                  placeholder="https://chat.whatsapp.com/..."
+                  placeholder="https://chat.whatsapp.com/... or https://www.whatsapp.com/channel/..."
                   required
                 />
                 {formData.link && !whatsappLinkPattern.test(formData.link) && (
-                  <p className="form-error">Invalid link format! Must start with https://chat.whatsapp.com/</p>
+                  <p className="form-error">Invalid link format! Must start with https://chat.whatsapp.com/ or https://www.whatsapp.com/channel/</p>
                 )}
               </div>
 
@@ -568,7 +568,7 @@ const AddWhatsappGroup = () => {
                     </svg>
                     Submitting...
                   </div>
-                ) : 'Submit Group'}
+                ) : 'Submit'}
               </button>
             </form>
 
@@ -705,7 +705,7 @@ const AddWhatsappGroup = () => {
                   <h4>❓ FAQs</h4>
                   <div className="faq-item">
                     <p><strong>Q1:</strong> <em>How to submit a WhatsApp group to multilinks.cloud?</em></p>
-                    <p>→ Use the group submission form above and paste your WhatsApp invite link (starts with https://chat.whatsapp.com/).</p>
+                    <p>→ Use the group submission form above and paste your WhatsApp invite/channel link (starts with https://chat.whatsapp.com/ or https://www.whatsapp.com/channel/).</p>
                   </div>
                   <div className="faq-item">
                     <p><strong>Q2:</strong> <em>Can I remove my group from the site later?</em></p>
