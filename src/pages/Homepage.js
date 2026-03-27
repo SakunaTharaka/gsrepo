@@ -346,14 +346,14 @@ function Homepage() {
 
               <div className="platform-select">
                 <div
-                  className={`platform-option ${selectedPlatform === 'whatsapp' ? 'active' : ''}`}
+                  className={`platform-option whatsapp ${selectedPlatform === 'whatsapp' ? 'active' : ''}`}
                   onClick={() => setSelectedPlatform('whatsapp')}
                 >
                   <img src="/whatsapp.png" alt="WhatsApp" className="platform-icon" />
                   WhatsApp
                 </div>
                 <div
-                  className={`platform-option ${selectedPlatform === 'telegram' ? 'active' : ''}`}
+                  className={`platform-option telegram ${selectedPlatform === 'telegram' ? 'active' : ''}`}
                   onClick={() => setSelectedPlatform('telegram')}
                 >
                   <img src="/telegram.png" alt="Telegram" className="platform-icon" />
